@@ -16,8 +16,22 @@
                 <MenuItem Header="_Exit&#xA;" Height="19" Click="Exit"/>
             </MenuItem>
         </Menu>
+        <StackPanel HorizontalAlignment="Left" Margin="0,21" Width="200">
+            <Button x:Name="penBtn" Content="Pen"/>
+            <Button x:Name="circleBtn" Content="Circle"/>
+            <Button x:Name="lineBtn" Content="Line"/>
+            <Button x:Name="curveBtn" Content="Curve"/>
+            <Button x:Name="moveBtn" Content="Move"/>
+            <Button x:Name="ellipseBtn" Content="Ellipse"/>
+            <Button x:Name="rectangleBtn" Content="Rectangle"/>
+            <Separator Height="12"/>
+            <Button x:Name="rotateBtn" Content="Rotate"/>
+            <Button x:Name="scaleBtn" Content="Scale"/>
+        </StackPanel>
         <StatusBar Height="21" VerticalAlignment="Bottom">
             <StatusBarItem x:Name="statusBarLabel" Content="" Height="21" VerticalAlignment="Top"/>
         </StatusBar>
+        <Ellipse Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="100" Margin="548,196,0,0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
+        <Canvas HorizontalAlignment="Left" Height="100" Margin="313,90,0,0" VerticalAlignment="Top" Width="100"/>
     </Grid>
 </Window>
