@@ -13,15 +13,15 @@ namespace Autorex {
 
 	public class Width: INotifyPropertyChanged {
 		public event PropertyChangedEventHandler PropertyChanged;
-		private static HashSet<double> ratios;
-		static {
-			ratios = new HashSet<double>;
-			ratios.Add("um", 0.001);
-			ratios.Add("mm", 1);
-			ratios.Add("cm", 10);
-			ratios.Add("dm", 100);
-			ratios.Add("m", 1000);
-			ratios.Add("in", 25.4);//dokladniej
+		private static Dictionary<string, decimal> ratios;
+		static Width() {
+			ratios = new Dictionary<string, decimal>();
+			ratios["um"] = 0.001m;
+			ratios["mm"] = 1m;
+			ratios["cm"] = 10m;
+			ratios["dm"] = 100m;
+			ratios["m"] =  1000m;
+			ratios["in"] = 25.4m;
 		}
 		private string visibility = "Visible";
 		public string Visibility {
@@ -40,9 +40,9 @@ namespace Autorex {
 				int result;
 				int index = value.IndexOf(' ');
 				if (int.TryParse(value.Substring(0, index), out result)) {
-					double ratio = ratios[value.Substring(index + 1)];
-					if (ratios != null)
-						this.value = result * ratio;
+					try {
+						this.value = result * ratios[value.Substring(index + 1)];
+					} catch {}
 				}
 			}
 		}
