@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Autorex {
@@ -18,34 +11,18 @@ namespace Autorex {
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
+        // initially use
+        DrawingTool tool = DrawingTool.Move;
+        bool draw = false;
+        Point? prevPoint;
+		UIElement temporaryElement;
+		Shape outline;
+		Shape selectedShape;
+		public PropertyManager CurrentProperties { get; set; } = new PropertyManager();
+		public string Test { get; set; } = "xdxd";
 		public MainWindow() {
 			InitializeComponent();
-
-			// Create a StackPanel to contain the shape.
-			StackPanel myStackPanel = new StackPanel();
-
-			// Create a red Ellipse.
-			Ellipse myEllipse = new Ellipse();
-
-			// Create a SolidColorBrush with a red color to fill the 
-			// Ellipse with.
-			SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-
-			// Describes the brush's color using RGB values. 
-			// Each value has a range of 0-255.
-			mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
-			myEllipse.Fill = mySolidColorBrush;
-			myEllipse.StrokeThickness = 2;
-			myEllipse.Stroke = Brushes.Black;
-
-			// Set the width and height of the Ellipse.
-			myEllipse.Width = 200;
-			myEllipse.Height = 100;
-
-			// Add the Ellipse to the StackPanel.
-			myStackPanel.Children.Add(myEllipse);
-
-			//this.Content = myStackPanel;
+			tmp.DataContext = CurrentProperties;
 		}
 
 		/////////////////////////
@@ -75,5 +52,115 @@ namespace Autorex {
 			Close();
 		}
 		#endregion
+
+		#region buttons
+		private void penBtn_Click(object sender, RoutedEventArgs e) {
+            tool = DrawingTool.Pen;
+        }
+		private void lineBtn_Click(object sender, RoutedEventArgs e) {
+            tool = DrawingTool.Line;
+        }
+		private void circleBtn_Click(object sender, RoutedEventArgs e) {
+			tool = DrawingTool.Circle;
+		}
+		private void curveBtn_Click(object sender, RoutedEventArgs e) {
+			tool = DrawingTool.Curve;
+		}
+		private void ellipseBtn_Click(object sender, RoutedEventArgs e) {
+			tool = DrawingTool.Ellipse;
+		}
+		#endregion
+		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            draw = true;
+            prevPoint = e.GetPosition(canvas);
+			// add a dot if no mousemove event happened before mouseup
+			canvas.CaptureMouse();
+        }
+
+        private void canvas_MouseMove(object sender, MouseEventArgs e) {
+			//Debug.WriteLine("mouseMove " + e.GetPosition(canvas).ToString());
+			if (!draw)
+				return;
+
+			Point mousePosition = e.GetPosition(canvas);
+			switch (tool) {
+				case DrawingTool.Ellipse:
+					canvas.Children.Remove(temporaryElement);
+					if (temporaryElement == null) {
+						temporaryElement = new Ellipse();
+						temporaryElement.MouseEnter += ShapeMouseEnter;
+						temporaryElement.MouseLeave += ShapeMouseLeave;
+					}
+					((Ellipse)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
+					((Ellipse)temporaryElement).Width = Math.Abs(prevPoint.Value.X - mousePosition.X);
+					((Ellipse)temporaryElement).Height = Math.Abs(prevPoint.Value.Y - mousePosition.Y);
+					Canvas.SetLeft(temporaryElement, Math.Min(prevPoint.Value.X, mousePosition.X));
+					Canvas.SetTop(temporaryElement, Math.Min(prevPoint.Value.Y, mousePosition.Y));
+					((Ellipse)temporaryElement).StrokeThickness = 2;
+					canvas.Children.Add(temporaryElement);
+					break;
+				case DrawingTool.Line:
+					canvas.Children.Remove(temporaryElement);
+					if (temporaryElement == null) {
+						temporaryElement = new Line();
+						temporaryElement.MouseEnter += ShapeMouseEnter;
+						temporaryElement.MouseLeave += ShapeMouseLeave;
+					}
+					((Line)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
+					((Line)temporaryElement).X1 = prevPoint.Value.X;
+					((Line)temporaryElement).Y1 = prevPoint.Value.Y;
+					((Line)temporaryElement).X2 = mousePosition.X;
+					((Line)temporaryElement).Y2 = mousePosition.Y;
+					((Line)temporaryElement).StrokeThickness = 2;
+					((Line)temporaryElement).StrokeStartLineCap = PenLineCap.Round;
+					((Line)temporaryElement).StrokeEndLineCap = PenLineCap.Round;
+					canvas.Children.Add(temporaryElement);
+					break;
+				case DrawingTool.Pen:
+					Line myLine = new Line();
+					myLine.Stroke = System.Windows.Media.Brushes.Blue;
+					myLine.X1 = prevPoint.Value.X;
+					myLine.Y1 = prevPoint.Value.Y;
+					myLine.X2 = mousePosition.X;
+					myLine.Y2 = mousePosition.Y;
+					canvas.Children.Add(myLine);
+					prevPoint = mousePosition;
+					break;
+			}
+        }
+
+        private void canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+			draw = false;
+			temporaryElement = null;
+			canvas.ReleaseMouseCapture();
+        }
+
+		private void ShapeMouseEnter(object sender, RoutedEventArgs e) {
+			if (selectedShape != null)
+				return;
+			dynamic dynamicSender = sender;
+			outline = Extensions.Outline(dynamicSender);
+			outline.Stroke = System.Windows.Media.Brushes.White;
+			outline.MouseLeave += OutlineMouseLeave;
+			outline.StrokeStartLineCap = PenLineCap.Round;
+			outline.StrokeEndLineCap = PenLineCap.Round;
+			Canvas.SetZIndex((UIElement)sender, 1);
+			canvas.Children.Add(outline);
+			selectedShape = (Shape)sender;
+		}
+		private void ShapeMouseLeave(object sender, RoutedEventArgs e) {
+			if (!outline.IsMouseOver) {
+				canvas.Children.Remove(outline);
+				Canvas.SetZIndex(selectedShape, 0);
+				selectedShape = null;
+			}
+		}
+		private void OutlineMouseLeave(object sender, RoutedEventArgs e) {
+			if (!selectedShape.IsMouseOver) {
+				canvas.Children.Remove(outline);
+				Canvas.SetZIndex(selectedShape, 0);
+				selectedShape = null;
+			}
+		}
 	}
 }
