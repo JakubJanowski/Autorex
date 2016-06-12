@@ -55,7 +55,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="PropertyManager.cs" />
+    <Compile Include="Binding\Property.cs" />
+    <Compile Include="Binding\ValueProperty.cs" />
+    <Compile Include="Binding\Segment.cs" />
+    <Compile Include="Binding\Offset.cs" />
+    <Compile Include="Binding\PropertyManager.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

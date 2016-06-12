@@ -11,7 +11,7 @@
         Rectangle,
 
         // actions
-        Move,
+        Select,
         Rotate,
         Scale
     }

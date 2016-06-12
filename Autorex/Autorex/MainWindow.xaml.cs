@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Autorex.Binding;
 
 namespace Autorex {
 	/// <summary>
@@ -12,17 +12,18 @@ namespace Autorex {
 	/// </summary>
 	public partial class MainWindow : Window {
         // initially use
-        DrawingTool tool = DrawingTool.Move;
+        DrawingTool tool = DrawingTool.Select;
         bool draw = false;
         Point? prevPoint;
 		UIElement temporaryElement;
 		Shape outline;
 		Shape selectedShape;
-		public PropertyManager CurrentProperties { get; set; } = new PropertyManager();
+		public PropertyManager PropertyManager { get; set; } = new PropertyManager();
 		public string Test { get; set; } = "xdxd";
 		public MainWindow() {
 			InitializeComponent();
-			tmp.DataContext = CurrentProperties;
+			PropertyManager.Update(canvas);//
+			propertiesPanel.DataContext = PropertyManager;
 		}
 
 		/////////////////////////
@@ -69,13 +70,20 @@ namespace Autorex {
 		private void ellipseBtn_Click(object sender, RoutedEventArgs e) {
 			tool = DrawingTool.Ellipse;
 		}
+		private void selectBtn_Click(object sender, RoutedEventArgs e) {
+			tool = DrawingTool.Select;
+		}
 		#endregion
 		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            draw = true;
-            prevPoint = e.GetPosition(canvas);
-			// add a dot if no mousemove event happened before mouseup
-			canvas.CaptureMouse();
-        }
+			if (tool != DrawingTool.Select) {
+				draw = true;
+				prevPoint = e.GetPosition(canvas);
+				// add a dot if no mousemove event happened before mouseup
+				canvas.CaptureMouse();
+			}
+			else
+				PropertyManager.Update(canvas);
+		}
 
         private void canvas_MouseMove(object sender, MouseEventArgs e) {
 			//Debug.WriteLine("mouseMove " + e.GetPosition(canvas).ToString());
@@ -98,6 +106,7 @@ namespace Autorex {
 					Canvas.SetTop(temporaryElement, Math.Min(prevPoint.Value.Y, mousePosition.Y));
 					((Ellipse)temporaryElement).StrokeThickness = 2;
 					canvas.Children.Add(temporaryElement);
+					PropertyManager.Update((Ellipse)temporaryElement);
 					break;
 				case DrawingTool.Line:
 					canvas.Children.Remove(temporaryElement);
@@ -106,15 +115,17 @@ namespace Autorex {
 						temporaryElement.MouseEnter += ShapeMouseEnter;
 						temporaryElement.MouseLeave += ShapeMouseLeave;
 					}
-					((Line)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
-					((Line)temporaryElement).X1 = prevPoint.Value.X;
-					((Line)temporaryElement).Y1 = prevPoint.Value.Y;
-					((Line)temporaryElement).X2 = mousePosition.X;
-					((Line)temporaryElement).Y2 = mousePosition.Y;
-					((Line)temporaryElement).StrokeThickness = 2;
-					((Line)temporaryElement).StrokeStartLineCap = PenLineCap.Round;
-					((Line)temporaryElement).StrokeEndLineCap = PenLineCap.Round;
+					Line temporaryLine = (Line)temporaryElement;
+					temporaryLine.Stroke = System.Windows.Media.Brushes.Blue;
+					temporaryLine.X1 = prevPoint.Value.X;
+					temporaryLine.Y1 = prevPoint.Value.Y;
+					temporaryLine.X2 = mousePosition.X;
+					temporaryLine.Y2 = mousePosition.Y;
+					temporaryLine.StrokeThickness = 2;
+					temporaryLine.StrokeStartLineCap = PenLineCap.Round;
+					temporaryLine.StrokeEndLineCap = PenLineCap.Round;
 					canvas.Children.Add(temporaryElement);
+					PropertyManager.Update(temporaryLine);
 					break;
 				case DrawingTool.Pen:
 					Line myLine = new Line();
@@ -136,12 +147,14 @@ namespace Autorex {
         }
 
 		private void ShapeMouseEnter(object sender, RoutedEventArgs e) {
-			if (selectedShape != null)
+			if (selectedShape != null || tool != DrawingTool.Select)
 				return;
 			dynamic dynamicSender = sender;
 			outline = Extensions.Outline(dynamicSender);
 			outline.Stroke = System.Windows.Media.Brushes.White;
 			outline.MouseLeave += OutlineMouseLeave;
+			outline.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+			outline.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
 			outline.StrokeStartLineCap = PenLineCap.Round;
 			outline.StrokeEndLineCap = PenLineCap.Round;
 			Canvas.SetZIndex((UIElement)sender, 1);
@@ -149,7 +162,7 @@ namespace Autorex {
 			selectedShape = (Shape)sender;
 		}
 		private void ShapeMouseLeave(object sender, RoutedEventArgs e) {
-			if (!outline.IsMouseOver) {
+			if (tool == DrawingTool.Select && !outline.IsMouseOver) {
 				canvas.Children.Remove(outline);
 				Canvas.SetZIndex(selectedShape, 0);
 				selectedShape = null;
@@ -161,6 +174,16 @@ namespace Autorex {
 				Canvas.SetZIndex(selectedShape, 0);
 				selectedShape = null;
 			}
+		}
+
+		private void ShapeMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+			dynamic dynamicSender = sender;
+			dynamicSender.CaptureMouse();
+			PropertyManager.Update(dynamicSender);
+		}
+
+		private void ShapeMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+			((Shape)sender).ReleaseMouseCapture();
 		}
 	}
 }
