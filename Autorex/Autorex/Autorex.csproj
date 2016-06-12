@@ -56,6 +56,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Binding\Property.cs" />
+    <Compile Include="Binding\TextProperty.cs" />
     <Compile Include="Binding\ValueProperty.cs" />
     <Compile Include="Binding\Segment.cs" />
     <Compile Include="Binding\Offset.cs" />

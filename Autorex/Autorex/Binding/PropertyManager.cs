@@ -15,6 +15,7 @@ namespace Autorex.Binding {
 		public ValueProperty Height { get; } = new ValueProperty();
 		public Segment LineSegment { get; } = new Segment();
 		public Offset Center { get; } = new Offset();
+		public TextProperty ShapeName { get; } = new TextProperty();
 
 
 		public PropertyManager() {
@@ -29,8 +30,8 @@ namespace Autorex.Binding {
 		}
 
 		public void Select(Line line) {
-			Debug.Write("\nSelect line");
 			selectedShape = line;
+			ShapeName.Text = "Line";
 			Width.Visibility.TextValue = "Collapsed";
 			Height.Visibility.TextValue = "Collapsed";
 			Center.SetVisibility("Collapsed");
@@ -38,7 +39,6 @@ namespace Autorex.Binding {
 		}
 
 		public void Update(Line line) {
-			Debug.Write("\nUpdate line");
 			LineSegment.StartOffset.X.Value = (decimal)line.X1;
 			LineSegment.StartOffset.Y.Value = (decimal)line.Y1;
 			LineSegment.EndOffset.X.Value = (decimal)line.X2;
@@ -46,8 +46,8 @@ namespace Autorex.Binding {
 		}
 
 		public void Select(Ellipse ellipse) {
-			Debug.Write("\nSelect ellipse");
 			selectedShape = ellipse;
+			ShapeName.Text = "Ellipse";
 			Width.Visibility.TextValue = "Visible";
 			Height.Visibility.TextValue = "Visible";
 			Center.SetVisibility("Visible");
@@ -55,7 +55,6 @@ namespace Autorex.Binding {
 		}
 
 		public void Update(Ellipse ellipse) {
-			Debug.Write("\nUpdate ellipse");
 			Width.Value = (decimal)ellipse.Width;
 			Height.Value = (decimal)ellipse.Height;
 			Center.X.Value = (decimal)Canvas.GetLeft(ellipse) + Width.Value / 2m;
@@ -63,7 +62,6 @@ namespace Autorex.Binding {
 		}
 
 		public void Select(Canvas canvas) {
-			Debug.Write("\nSelect canvas");
 			selectedShape = null;
 			Width.Visibility.TextValue = "Visible";
 			Height.Visibility.TextValue = "Visible";
@@ -72,9 +70,8 @@ namespace Autorex.Binding {
 		}
 
 		public void Update(Canvas canvas) {
-			Debug.Write("\nUpdate canvas");
-			//Width.Value = 950m;
-			//Height.Value = 950m;
+			ShapeName.Text = "Draft";
+			// not implemented yet
 		}
 
 		private void OnLineSegmentStartXOffsetChanged(object sender, PropertyChangedEventArgs e) {

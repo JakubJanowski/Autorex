@@ -172,10 +172,13 @@ namespace Autorex {
 					return;
 				}
 			}
+			draftSaved = true;
 			Close();
 		}
 		#endregion
 
+		/////////////////////////
+		// Button actions
 		#region buttons
 		private void penBtn_Click(object sender, RoutedEventArgs e) {
             tool = DrawingTool.Pen;
@@ -197,6 +200,8 @@ namespace Autorex {
 		}
 		#endregion
 
+		/////////////////////////
+		// Mouse events handling
 		#region mouse_events
 		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
 			Debug.Write("\ncanvas_MouseLeftButtonDown");
@@ -340,6 +345,8 @@ namespace Autorex {
 		}
 		#endregion
 
+		/////////////////////////
+		// Miscellaneous events
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
 			if (!draftSaved) {
 				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);

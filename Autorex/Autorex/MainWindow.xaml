@@ -17,47 +17,53 @@
                 <MenuItem Header="_Exit&#xA;" Height="19" Click="Exit"/>
             </MenuItem>
         </Menu>
-        <Border HorizontalAlignment="Left" Margin="0 21" BorderThickness="0 0 1 0" Width="200" BorderBrush="#FF0F0F0F">
-            <StackPanel x:Name="propertiesPanel" Background="#FFE2E2E2">
-                <Button x:Name="penBtn" Content="Pen" Click="penBtn_Click"/>
-                <Button x:Name="circleBtn" Content="Circle" Click="circleBtn_Click"/>
-                <Button x:Name="lineBtn" Content="Line" Click="lineBtn_Click"/>
-                <Button x:Name="curveBtn" Content="Curve" Click="curveBtn_Click"/>
+        <Border HorizontalAlignment="Left" Margin="0 21" BorderThickness="0 0 1 0" Width="250" BorderBrush="#FF0F0F0F">
+            <StackPanel x:Name="propertiesPanel" Background="#FFE2E2E2" Margin="0 5 0 0">
+                <Button x:Name="circleBtn" Content="Circle" Click="circleBtn_Click" IsEnabled="False"/>
+                <Button x:Name="curveBtn" Content="Curve" Click="curveBtn_Click" IsEnabled="False"/>
                 <Button x:Name="ellipseBtn" Content="Ellipse" Click="ellipseBtn_Click"/>
-                <Button x:Name="rectangleBtn" Content="Rectangle"/>
+                <Button x:Name="lineBtn" Content="Line" Click="lineBtn_Click"/>
+                <Button x:Name="penBtn" Content="Pen" Click="penBtn_Click" IsEnabled="False"/>
+                <Button x:Name="rectangleBtn" Content="Rectangle" IsEnabled="False"/>
                 <Separator Height="12"/>
+                <Button x:Name="scaleBtn" Content="Scale" IsEnabled="False"/>
                 <Button x:Name="selectBtn" Content="Select" Click="selectBtn_Click"/>
-                <Button x:Name="rotateBtn" Content="Rotate"/>
-                <Button x:Name="scaleBtn" Content="Scale"/>
+                <Button x:Name="rotateBtn" Content="Rotate" IsEnabled="False"/>
                 <Separator Height="12"/>
-                <Label x:Name="propertiesName" Content="Draft properties"/>
+                <Label x:Name="propertiesName" Content="{Binding ShapeName.Text, Mode=OneWay}" ContentStringFormat="{}{0} properties"/>
                 <DockPanel Visibility="{Binding Width.Visibility.TextValue}">
                     <Label Content="Width"/>
-                    <TextBox VerticalAlignment="Center" Margin="4 0 0 0" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Margin="5 0 1 0" />
                 </DockPanel>
                 <DockPanel Visibility="{Binding Height.Visibility.TextValue}">
                     <Label Content="Height"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Height.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Height.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Margin="1 0 1 0"/>
                 </DockPanel>
                 <DockPanel Visibility="{Binding Center.Visibility.TextValue}">
                     <Label Content="Center offset"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Center.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Center.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                    <Label Content="X"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
+                    <Label Content="Y"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
                 </DockPanel>
                 <StackPanel Visibility="{Binding LineSegment.Visibility.TextValue}">
                     <DockPanel Visibility="{Binding LineSegment.StartOffset.Visibility.TextValue}">
                         <Label Content="Start offset"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                        <Label Content="X" Margin="10 0 0 0"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
+                        <Label Content="Y"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
                     </DockPanel>
                     <DockPanel Visibility="{Binding LineSegment.EndOffset.Visibility.TextValue}">
                         <Label Content="End offset"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                        <Label Content="X" Margin="15 0 0 0"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
+                        <Label Content="Y"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="68"/>
                     </DockPanel>
                     <DockPanel Visibility="{Binding LineSegment.Visibility.TextValue}">
                         <Label Content="Length"/>
-                        <TextBox VerticalAlignment="Center" IsReadOnly="True" Text="{Binding LineSegment.LengthString, Mode=OneWay}"/>
+                        <TextBox VerticalAlignment="Center" IsReadOnly="True" Text="{Binding LineSegment.LengthString, Mode=OneWay}" Margin="0 0 1 0"/>
                     </DockPanel>
                 </StackPanel>
             </StackPanel>
@@ -65,7 +71,7 @@
         <StatusBar Height="21" VerticalAlignment="Bottom">
             <StatusBarItem x:Name="statusBarLabel" Content="" Height="21" VerticalAlignment="Top"/>
         </StatusBar>
-        <Border Margin="205,26,10,26" BorderThickness="1" BorderBrush="#FF0F0F0F">
+        <Border Margin="255,26,10,26" BorderThickness="1" BorderBrush="#FF0F0F0F">
             <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" ClipToBounds="True">
                 <Canvas.Background>
                     <SolidColorBrush Color="White" Opacity="0"/>
