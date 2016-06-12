@@ -25,13 +25,53 @@ namespace Autorex {
 		public MainWindow() {
 			InitializeComponent();
 			propertiesPanel.DataContext = PropertyManager;
-			PropertyManager.Select(canvas);//
-			PropertyManager.Update(canvas);//
 		}
-		
+
+
+		/////////////////////////
+		// Static functions
+		private static void AddGrid(Canvas canvas) {
+			for (int x = 50; x < canvas.ActualWidth; x += 100) {
+				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 0.5, "#FF808080");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int y = 50; y < canvas.ActualHeight; y += 100) {
+				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 0.5, "#FF808080");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int x = 100; x < canvas.ActualWidth; x += 100) {
+				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 1, "#FF000000");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int y = 100; y < canvas.ActualHeight; y += 100) {
+				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 1, "#FF000000");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+		}
+
 		/////////////////////////
 		// Main menu functions
 		#region menu_functions
+		private void New(object sender, RoutedEventArgs e) {
+			if (!draftSaved) {
+				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
+				if (result == MessageBoxResult.Yes) {
+					Save(null, null);
+					return;
+				}
+				if (result != MessageBoxResult.No)
+					return;
+			}
+			canvas.Children.ClearShapes();
+			draftSaved = true;
+			PropertyManager.Select(canvas);
+			PropertyManager.Update(canvas);
+		}
+
 		private void Open(object sender, RoutedEventArgs e) {
 			if (!draftSaved) {
 				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
@@ -44,8 +84,7 @@ namespace Autorex {
 			}
 
 			Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
-			//dialog.DefaultExt = ".atrx";
-			dialog.Filter = "Autorex Files (*.atrx)|*.atrx";
+			dialog.Filter = "Autorex Files (*.atrx)|*.atrx|All files (*.*)|*.*";
 
 			if (dialog.ShowDialog() == true)
 				filename = dialog.FileName;
@@ -64,7 +103,7 @@ namespace Autorex {
 				return;
 			}
 
-			canvas.Children.Clear();
+			canvas.Children.ClearShapes();
 			try {
 				while(!binaryReader.EndOfFile()) {
 					switch((DrawingTool)binaryReader.ReadByte()) {
@@ -105,6 +144,8 @@ namespace Autorex {
 					}
 				}
 				draftSaved = true;
+				PropertyManager.Select(canvas);
+				PropertyManager.Update(canvas);
 			} catch (IOException) {
 				MessageBox.Show("An error occured while reading the file. It might be corrupted.", "Error");
 			} finally {
@@ -127,7 +168,9 @@ namespace Autorex {
 			}
 
 			try {
-				foreach (var shape in canvas.Children) {
+				foreach (Shape shape in canvas.Children) {
+					if (shape.Tag != null)
+						continue;
 					if (shape is Line) {
 						binaryWriter.Write((byte)DrawingTool.Line);
 						binaryWriter.Write((shape as Line).X1);
@@ -152,8 +195,8 @@ namespace Autorex {
 		}
 
 		private void SaveAs(object sender, RoutedEventArgs e) {
-			Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
-			dialog.Filter = "Autorex Files (*.atrx)|*.atrx";
+			Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
+			dialog.Filter = "Autorex Files (*.atrx)|*.atrx|All files (*.*)|*.*";
 
 			if (dialog.ShowDialog() == true)
 				filename = dialog.FileName;
@@ -212,6 +255,7 @@ namespace Autorex {
 			}
 			else {
 				Debug.Write(" updated property manager");
+				PropertyManager.Select(canvas);
 				PropertyManager.Update(canvas);
 			}
 		}
@@ -340,13 +384,18 @@ namespace Autorex {
 		}
 
 		private void TextBox_LostFocus(object sender, RoutedEventArgs e) {
-			if(((sender as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ResolvedSource as ValueProperty).Refresh())
-				draftSaved = true;
+			((sender as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ResolvedSource as ValueProperty).Refresh();
 		}
 		#endregion
 
 		/////////////////////////
 		// Miscellaneous events
+		private void Window_ContentRendered(object sender, EventArgs e) {
+			PropertyManager.Select(canvas);
+			PropertyManager.Update(canvas);
+			AddGrid(canvas);
+		}
+
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
 			if (!draftSaved) {
 				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
@@ -356,6 +405,18 @@ namespace Autorex {
 					e.Cancel = true;
 				}
 			}
+		}
+
+		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e) {
+			if (e.NewSize.Width - e.PreviousSize.Width > 0 || e.NewSize.Height - e.PreviousSize.Height > 0) {
+				canvas.Children.ClearGrid();
+				AddGrid(canvas);
+			}
+		}
+
+		private void propertiesPanel_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e) {
+			PropertyManager.UserOperation((e.OriginalSource as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ParentBinding.Path.Path);
+			draftSaved = false;
 		}
 	}
 }

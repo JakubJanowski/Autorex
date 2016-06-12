@@ -10,9 +10,9 @@
         Pen,
         Rectangle,
 
-        // actions
-        Select,
-        Rotate,
-        Scale
+		// actions
+		Scale,
+		Select,
+        Rotate
     }
 }

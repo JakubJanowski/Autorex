@@ -17,18 +17,6 @@ namespace Autorex.Binding {
 		public Offset Center { get; } = new Offset();
 		public TextProperty ShapeName { get; } = new TextProperty();
 
-
-		public PropertyManager() {
-			LineSegment.StartOffset.X.PropertyChanged += OnLineSegmentStartXOffsetChanged;
-			LineSegment.StartOffset.Y.PropertyChanged += OnLineSegmentStartYOffsetChanged;
-			LineSegment.EndOffset.X.PropertyChanged += OnLineSegmentEndXOffsetChanged;
-			LineSegment.EndOffset.Y.PropertyChanged += OnLineSegmentEndYOffsetChanged;
-			Center.X.PropertyChanged += OnCenterXOffsetChanged;
-			Center.Y.PropertyChanged += OnCenterYOffsetChanged;
-			Width.PropertyChanged += OnWidthChanged;
-			Height.PropertyChanged += OnHeightChanged;
-		}
-
 		public void Select(Line line) {
 			selectedShape = line;
 			ShapeName.Text = "Line";
@@ -71,40 +59,58 @@ namespace Autorex.Binding {
 
 		public void Update(Canvas canvas) {
 			ShapeName.Text = "Draft";
+			Width.Value = (decimal)canvas.ActualWidth;
+			Height.Value = (decimal)canvas.ActualHeight;
 			// not implemented yet
 		}
 
-		private void OnLineSegmentStartXOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape is Line)
-				((Line)selectedShape).X1 = (double)LineSegment.StartOffset.X.Value;
-		}
-		private void OnLineSegmentStartYOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape is Line)
-				((Line)selectedShape).Y1 = (double)LineSegment.StartOffset.Y.Value;
-		}
-		private void OnLineSegmentEndXOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape is Line)
-				((Line)selectedShape).X2 = (double)LineSegment.EndOffset.X.Value;
-		}
-		private void OnLineSegmentEndYOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape is Line)
-				((Line)selectedShape).Y2 = (double)LineSegment.EndOffset.Y.Value;
-		}
-		private void OnWidthChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape != null)
-				selectedShape.Width = (double)Width.Value;
-		}
-		private void OnHeightChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape != null)
-				selectedShape.Height = (double)Height.Value;
-		}
-		private void OnCenterXOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape != null)
-				Canvas.SetLeft(selectedShape, (double)(Center.X.Value - Width.Value / 2m));
-		}
-		private void OnCenterYOffsetChanged(object sender, PropertyChangedEventArgs e) {
-			if (selectedShape != null)
-				Canvas.SetTop(selectedShape, (double)(Center.Y.Value - Height.Value / 2m));
+		public void UserOperation(string propertyPath) {
+			if (selectedShape == null) return;
+			string[] properties = propertyPath.Split('.');
+			switch(properties[0]) {
+				case "Width":
+					Canvas.SetLeft(selectedShape, (double)(Center.X.Value - Width.Value / 2m));
+					selectedShape.Width = (double)Width.Value;
+					break;
+				case "Height":
+					Canvas.SetTop(selectedShape, (double)(Center.Y.Value - Height.Value / 2m));
+					selectedShape.Height = (double)Height.Value;
+					break;
+				case "LineSegment":
+					switch (properties[1]) {
+						case "StartOffset":
+							switch (properties[2]) {
+								case "X":
+									((Line)selectedShape).X1 = (double)LineSegment.StartOffset.X.Value;
+									break;
+								case "Y":
+									((Line)selectedShape).Y1 = (double)LineSegment.StartOffset.Y.Value;
+									break;
+							}
+							break;
+						case "EndOffset":
+							switch (properties[2]) {
+								case "X":
+									((Line)selectedShape).X2 = (double)LineSegment.EndOffset.X.Value;
+									break;
+								case "Y":
+									((Line)selectedShape).Y2 = (double)LineSegment.EndOffset.Y.Value;
+									break;
+							}
+							break;
+					}
+					break;
+				case "Center":
+					switch (properties[1]) {
+						case "X":
+							Canvas.SetLeft(selectedShape, (double)(Center.X.Value - Width.Value / 2m));
+							break;
+						case "Y":
+							Canvas.SetTop(selectedShape, (double)(Center.Y.Value - Height.Value / 2m));
+							break;
+					}
+					break;
+			}
 		}
 	}
 }

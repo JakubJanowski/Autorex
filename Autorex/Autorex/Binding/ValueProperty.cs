@@ -42,15 +42,13 @@ namespace Autorex.Binding {
 		public VisibleProperty Visibility { get; } = new VisibleProperty();
 
 		/// <summary>
-		/// Function sets the ValueString property to respoective value from Value property
+		/// Function sets the ValueString property to respective value from Value property
 		/// </summary>
-		/// <returns>true if field was changed, false otherwise</returns>
-		public bool Refresh() {
+		public void Refresh() {
 			if (valueString == value + " mm")
-				return false;
+				return;
 			valueString = value + " mm";
 			OnPropertyChanged("ValueString");
-			return true;
 		}
 		
 		/// <summary>
