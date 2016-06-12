@@ -47,7 +47,7 @@
                     <DockPanel Visibility="{Binding LineSegment.StartOffset.Visibility}">
                         <Label Content="Start offset"/>
                         <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.X.ValueString}" Width="50"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString}" Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"  Width="50"/>
                     </DockPanel>
                     <DockPanel Visibility="{Binding LineSegment.EndOffset.Visibility}">
                         <Label Content="End offset"/>

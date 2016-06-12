@@ -191,5 +191,9 @@ namespace Autorex {
 			((Shape)sender).ReleaseMouseCapture();
 			e.Handled = true;
 		}
+
+		private void TextBox_LostFocus(object sender, RoutedEventArgs e) {
+			// odswiezyc wartosc valueString pola zbindowanego do sendera
+		}
 	}
 }

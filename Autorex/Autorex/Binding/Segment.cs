@@ -29,10 +29,14 @@ namespace Autorex.Binding {
 			}
 		}
 		public Segment() {
-			StartOffset.X.updateProperties.Add(Tuple.Create((object)this, "LengthString"));
-			StartOffset.Y.updateProperties.Add(Tuple.Create((object)this, "LengthString"));
-			EndOffset.X.updateProperties.Add(Tuple.Create((object)this, "LengthString"));
-			EndOffset.Y.updateProperties.Add(Tuple.Create((object)this, "LengthString"));
+			StartOffset.X.PropertyChanged += OnPropertyChanged;
+			StartOffset.Y.PropertyChanged += OnPropertyChanged;
+			EndOffset.X.PropertyChanged += OnPropertyChanged;
+			EndOffset.Y.PropertyChanged += OnPropertyChanged;
+		}
+
+		private void OnPropertyChanged(object sender, PropertyChangedEventArgs e) {
+			base.OnPropertyChanged("LengthString");
 		}
 	}
 }

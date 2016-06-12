@@ -24,6 +24,25 @@ namespace Autorex.Binding {
 			get { return value; ; }
 			set {
 				this.value = value;
+				valueString = value + " mm";
+				OnPropertyChanged("Value");
+				OnPropertyChanged("ValueString");
+			}
+		}
+		protected string valueString;
+		public virtual string ValueString {
+			get { return valueString; }
+			set {
+				valueString = value;
+				ParseValue(value, ref this.value);
+				OnPropertyChanged("ValueString");
+			}
+		}
+		/*protected decimal value;
+		public decimal Value {
+			get { return value; ; }
+			set {
+				this.value = value;
 				OnPropertyChanged("Value");
 				OnPropertyChanged("ValueString");
 			}
@@ -34,7 +53,7 @@ namespace Autorex.Binding {
 				ParseValue(value, ref this.value);
 				OnPropertyChanged("ValueString");
 			}
-		}
+		}*/
 		/// <summary>
 		/// Parse given string to exact value in milimeters e.g. "95 in"
 		/// </summary>
