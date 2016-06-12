@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Autorex.Binding {
 	public class Property: INotifyPropertyChanged {
 		public event PropertyChangedEventHandler PropertyChanged;
-		//public List<string> updateProperties = new List<string>();
+		public List<Tuple<object, string>> updateProperties = new List<Tuple<object, string>>();
 		protected string visibility = "Collapsed";
 		public virtual string Visibility {
 			get { return visibility; }
@@ -20,8 +21,8 @@ namespace Autorex.Binding {
 			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null) {
 				handler(this, new PropertyChangedEventArgs(name));
-				//foreach(var propertyName in updateProperties)
-				//	handler(this, new PropertyChangedEventArgs(propertyName));
+				foreach(var property in updateProperties)
+					handler(property.Item1, new PropertyChangedEventArgs(property.Item2));
 			}
 		}
 	}

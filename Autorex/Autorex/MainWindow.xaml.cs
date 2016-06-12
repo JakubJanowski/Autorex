@@ -98,6 +98,8 @@ namespace Autorex {
 						temporaryElement = new Ellipse();
 						temporaryElement.MouseEnter += ShapeMouseEnter;
 						temporaryElement.MouseLeave += ShapeMouseLeave;
+						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
 					}
 					((Ellipse)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
 					((Ellipse)temporaryElement).Width = Math.Abs(prevPoint.Value.X - mousePosition.X);
@@ -114,6 +116,8 @@ namespace Autorex {
 						temporaryElement = new Line();
 						temporaryElement.MouseEnter += ShapeMouseEnter;
 						temporaryElement.MouseLeave += ShapeMouseLeave;
+						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
 					}
 					Line temporaryLine = (Line)temporaryElement;
 					temporaryLine.Stroke = System.Windows.Media.Brushes.Blue;
@@ -180,10 +184,12 @@ namespace Autorex {
 			dynamic dynamicSender = sender;
 			dynamicSender.CaptureMouse();
 			PropertyManager.Update(dynamicSender);
+			e.Handled = true;
 		}
 
 		private void ShapeMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
 			((Shape)sender).ReleaseMouseCapture();
+			e.Handled = true;
 		}
 	}
 }

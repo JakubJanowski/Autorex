@@ -38,6 +38,11 @@
                     <Label Content="Height"/>
                     <TextBox VerticalAlignment="Center" Text="{Binding Height.ValueString}"/>
                 </DockPanel>
+                <DockPanel Visibility="{Binding Center.Visibility}">
+                    <Label Content="Center offset"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.X.ValueString}" Width="50"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.Y.ValueString}" Width="50"/>
+                </DockPanel>
                 <StackPanel Visibility="{Binding LineSegment.Visibility}">
                     <DockPanel Visibility="{Binding LineSegment.StartOffset.Visibility}">
                         <Label Content="Start offset"/>
@@ -46,10 +51,10 @@
                     </DockPanel>
                     <DockPanel Visibility="{Binding LineSegment.EndOffset.Visibility}">
                         <Label Content="End offset"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding test}" Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.X.ValueString}" Width="50"/>
                         <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.Y.ValueString}" Width="50"/>
                     </DockPanel>
-                    <DockPanel>
+                    <DockPanel Visibility="{Binding LineSegment.Visibility}">
                         <Label Content="Length"/>
                         <TextBox VerticalAlignment="Center" IsReadOnly="True" Text="{Binding LineSegment.LengthString, Mode=OneWay}"/>
                     </DockPanel>

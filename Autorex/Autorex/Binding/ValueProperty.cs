@@ -25,6 +25,7 @@ namespace Autorex.Binding {
 			set {
 				this.value = value;
 				OnPropertyChanged("Value");
+				OnPropertyChanged("ValueString");
 			}
 		}
 		public virtual string ValueString {

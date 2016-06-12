@@ -9,9 +9,16 @@ namespace Autorex.Binding {
 		public ValueProperty X { get; } = new ValueProperty();
 		public ValueProperty Y { get; } = new ValueProperty();
 		public override string Visibility {
+			get {
+				return visibility;
+			}
 			set {
-				X.Visibility = value;
-				Y.Visibility = value;
+				if (value != visibility && (value == "Visible" || value == "Collapsed")) {
+					visibility = value;
+					X.Visibility = value;
+					Y.Visibility = value;
+					OnPropertyChanged("Visibility");
+				}
 			}
 		}
 	}
