@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
@@ -26,6 +27,10 @@ namespace Autorex {
 			Canvas.SetTop(copy, Canvas.GetTop(ellipse) - 2);
 			copy.StrokeThickness = 6;
 			return copy;
+		}
+		
+		public static bool EndOfFile(this BinaryReader binaryReader) {
+			return binaryReader.BaseStream.Position == binaryReader.BaseStream.Length;
 		}
 
 		public static decimal Sqrt(decimal x, decimal epsilon = 0.0m) {

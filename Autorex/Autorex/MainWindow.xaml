@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Autorex"
         mc:Ignorable="d"
+        Closing="Window_Closing"
         Title="Autorex" Height="720" Width="1280">
     <Grid Background="#FFC9C9C9">
         <Menu x:Name="menu" Height="21" VerticalAlignment="Top">

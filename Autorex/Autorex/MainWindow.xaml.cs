@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Autorex.Binding;
 using System.Diagnostics;
+using System.IO;
 
 namespace Autorex {
 	/// <summary>
@@ -14,6 +15,8 @@ namespace Autorex {
 	public partial class MainWindow : Window {
         DrawingTool tool = DrawingTool.Line;
         bool draw = false;
+		bool draftSaved = true;
+		string filename;
         Point? prevPoint;
 		UIElement temporaryElement;
 		Shape outline;
@@ -25,31 +28,150 @@ namespace Autorex {
 			PropertyManager.Select(canvas);//
 			PropertyManager.Update(canvas);//
 		}
-
+		
 		/////////////////////////
 		// Main menu functions
 		#region menu_functions
 		private void Open(object sender, RoutedEventArgs e) {
+			if (!draftSaved) {
+				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
+				if (result == MessageBoxResult.Yes) {
+					Save(null, null);
+					return;
+				}
+				if (result != MessageBoxResult.No)
+					return;
+			}
+
 			Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
-			
-			// Set filter for file extension and default file extension 
 			//dialog.DefaultExt = ".atrx";
 			dialog.Filter = "Autorex Files (*.atrx)|*.atrx";
-			
-			if (dialog.ShowDialog() == true) {
-				string filename = dialog.FileName;
+
+			if (dialog.ShowDialog() == true)
+				filename = dialog.FileName;
+			else return;
+
+			if (filename == null) {
+				MessageBox.Show("Could not open specified file.", "Error");
+				return;
+			}
+
+			BinaryReader binaryReader;
+			try {
+				binaryReader = new BinaryReader(new FileStream(filename, FileMode.Open, FileAccess.Read));
+			} catch (IOException) {
+				MessageBox.Show("Could not open file.", "Error");
+				return;
+			}
+
+			canvas.Children.Clear();
+			try {
+				while(!binaryReader.EndOfFile()) {
+					switch((DrawingTool)binaryReader.ReadByte()) {
+						case DrawingTool.Line:
+							Line line = new Line();
+
+							line.MouseEnter += ShapeMouseEnter;
+							line.MouseLeave += ShapeMouseLeave;
+							line.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+							line.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+							line.Stroke = System.Windows.Media.Brushes.Blue;
+							line.StrokeThickness = 2;
+							line.StrokeStartLineCap = PenLineCap.Round;
+							line.StrokeEndLineCap = PenLineCap.Round;
+
+							line.X1 = binaryReader.ReadDouble();
+							line.Y1 = binaryReader.ReadDouble();
+							line.X2 = binaryReader.ReadDouble();
+							line.Y2 = binaryReader.ReadDouble();
+							canvas.Children.Add(line);
+							break;
+						case DrawingTool.Ellipse:
+							Ellipse ellipse = new Ellipse();
+
+							ellipse.MouseEnter += ShapeMouseEnter;
+							ellipse.MouseLeave += ShapeMouseLeave;
+							ellipse.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+							ellipse.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+							ellipse.Stroke = System.Windows.Media.Brushes.Blue;
+							ellipse.StrokeThickness = 2;
+
+							Canvas.SetLeft(ellipse, binaryReader.ReadDouble());
+							Canvas.SetTop(ellipse, binaryReader.ReadDouble());
+							ellipse.Width = binaryReader.ReadDouble();
+							ellipse.Height = binaryReader.ReadDouble();
+							canvas.Children.Add(ellipse);
+							break;
+					}
+				}
+				draftSaved = true;
+			} catch (IOException) {
+				MessageBox.Show("An error occured while reading the file. It might be corrupted.", "Error");
+			} finally {
+				binaryReader.Close();
 			}
 		}
 
 		private void Save(object sender, RoutedEventArgs e) {
-			
+			if (filename == null) {
+				SaveAs(sender, e);
+				return;
+			}
+
+			BinaryWriter binaryWriter;
+			try {
+				binaryWriter = new BinaryWriter(new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write));
+			} catch (IOException) {
+				MessageBox.Show("Could not create file.", "Error");
+				return;
+			}
+
+			try {
+				foreach (var shape in canvas.Children) {
+					if (shape is Line) {
+						binaryWriter.Write((byte)DrawingTool.Line);
+						binaryWriter.Write((shape as Line).X1);
+						binaryWriter.Write((shape as Line).Y1);
+						binaryWriter.Write((shape as Line).X2);
+						binaryWriter.Write((shape as Line).Y2);
+					}
+					else if (shape is Ellipse) {
+						binaryWriter.Write((byte)DrawingTool.Ellipse);
+						binaryWriter.Write(Canvas.GetLeft(shape as Ellipse));
+						binaryWriter.Write(Canvas.GetTop(shape as Ellipse));
+						binaryWriter.Write((shape as Ellipse).Width);
+						binaryWriter.Write((shape as Ellipse).Height);
+					}
+				}
+				draftSaved = true;
+			} catch (IOException) {
+				MessageBox.Show("An error occured while writing to file.", "Error");
+			} finally {
+				binaryWriter.Close();
+			}
 		}
 
 		private void SaveAs(object sender, RoutedEventArgs e) {
-			
+			Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
+			dialog.Filter = "Autorex Files (*.atrx)|*.atrx";
+
+			if (dialog.ShowDialog() == true)
+				filename = dialog.FileName;
+			else return;
+
+			if (filename != null)
+				Save(sender, e);
 		}
 
 		private void Exit(object sender, RoutedEventArgs e) {
+			if (!draftSaved) {
+				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
+				if (result == MessageBoxResult.Yes)
+					Save(null, null);
+				if (result != MessageBoxResult.No) {
+					return;
+				}
+			}
 			Close();
 		}
 		#endregion
@@ -98,6 +220,7 @@ namespace Autorex {
 				case DrawingTool.Ellipse:
 					canvas.Children.Remove(temporaryElement);
 					if (temporaryElement == null) {
+						draftSaved = false;
 						temporaryElement = new Ellipse();
 						temporaryElement.MouseEnter += ShapeMouseEnter;
 						temporaryElement.MouseLeave += ShapeMouseLeave;
@@ -117,6 +240,7 @@ namespace Autorex {
 				case DrawingTool.Line:
 					canvas.Children.Remove(temporaryElement);
 					if (temporaryElement == null) {
+						draftSaved = false;
 						temporaryElement = new Line();
 						temporaryElement.MouseEnter += ShapeMouseEnter;
 						temporaryElement.MouseLeave += ShapeMouseLeave;
@@ -137,6 +261,7 @@ namespace Autorex {
 					PropertyManager.Update(temporaryLine);
 					break;
 				case DrawingTool.Pen:
+					draftSaved = false;
 					Line myLine = new Line();
 					myLine.Stroke = System.Windows.Media.Brushes.Blue;
 					myLine.X1 = prevPoint.Value.X;
@@ -210,8 +335,20 @@ namespace Autorex {
 		}
 
 		private void TextBox_LostFocus(object sender, RoutedEventArgs e) {
-			((sender as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ResolvedSource as ValueProperty).Refresh();
+			if(((sender as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ResolvedSource as ValueProperty).Refresh())
+				draftSaved = true;
 		}
 		#endregion
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+			if (!draftSaved) {
+				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
+				if (result == MessageBoxResult.Yes)
+					Save(null, null);
+				if (result != MessageBoxResult.No) {
+					e.Cancel = true;
+				}
+			}
+		}
 	}
 }

@@ -41,9 +41,16 @@ namespace Autorex.Binding {
 
 		public VisibleProperty Visibility { get; } = new VisibleProperty();
 
-		public void Refresh() {
+		/// <summary>
+		/// Function sets the ValueString property to respoective value from Value property
+		/// </summary>
+		/// <returns>true if field was changed, false otherwise</returns>
+		public bool Refresh() {
+			if (valueString == value + " mm")
+				return false;
 			valueString = value + " mm";
 			OnPropertyChanged("ValueString");
+			return true;
 		}
 		
 		/// <summary>

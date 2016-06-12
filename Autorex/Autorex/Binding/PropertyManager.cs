@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 
 namespace Autorex.Binding {
+	// Decimal values are not currently supported
 	public class PropertyManager {
 		private Shape selectedShape;
 		public ValueProperty Width { get; } = new ValueProperty();
