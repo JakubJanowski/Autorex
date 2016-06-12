@@ -11,23 +11,26 @@ namespace Autorex.Binding {
 		public Offset EndOffset { get; set; } = new Offset();
 		public string LengthString {
 			get {
-				return Extensions.Sqrt((StartOffset.X.Value - EndOffset.X.Value) * (StartOffset.X.Value - EndOffset.X.Value) + 
-					(StartOffset.Y.Value - EndOffset.Y.Value) * (StartOffset.Y.Value - EndOffset.Y.Value)).ToString("#.###") + " mm";
-			}
-		}
-		public override string Visibility {
-			get {
-				return visibility;
-			}
-			set {
-				if (value != visibility && (value == "Visible" || value == "Collapsed")) {
-					visibility = value;
-					StartOffset.Visibility = value;
-					EndOffset.Visibility = value;
-					OnPropertyChanged("Visibility");
+				try {
+					return Extensions.Sqrt((StartOffset.X.Value - EndOffset.X.Value) * (StartOffset.X.Value - EndOffset.X.Value) +
+						(StartOffset.Y.Value - EndOffset.Y.Value) * (StartOffset.Y.Value - EndOffset.Y.Value)).ToString("#.###") + " mm";
+				} catch (ArgumentOutOfRangeException) {
+					return "Inf";
+				} catch (Exception) {
+					return "NaN";
 				}
 			}
 		}
+
+		public VisibleProperty Visibility { get; } = new VisibleProperty();
+		public void SetVisibility(string value) {
+			if (value != Visibility.TextValue && (value == "Visible" || value == "Collapsed")) {
+				Visibility.TextValue = value;
+				StartOffset.SetVisibility(value);
+				EndOffset.SetVisibility(value);
+			}
+		}
+
 		public Segment() {
 			StartOffset.X.PropertyChanged += OnPropertyChanged;
 			StartOffset.Y.PropertyChanged += OnPropertyChanged;

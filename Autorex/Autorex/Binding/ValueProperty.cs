@@ -38,22 +38,14 @@ namespace Autorex.Binding {
 				OnPropertyChanged("ValueString");
 			}
 		}
-		/*protected decimal value;
-		public decimal Value {
-			get { return value; ; }
-			set {
-				this.value = value;
-				OnPropertyChanged("Value");
-				OnPropertyChanged("ValueString");
-			}
+
+		public VisibleProperty Visibility { get; } = new VisibleProperty();
+
+		public void Refresh() {
+			valueString = value + " mm";
+			OnPropertyChanged("ValueString");
 		}
-		public virtual string ValueString {
-			get { return value + " mm"; }
-			set {
-				ParseValue(value, ref this.value);
-				OnPropertyChanged("ValueString");
-			}
-		}*/
+		
 		/// <summary>
 		/// Parse given string to exact value in milimeters e.g. "95 in"
 		/// </summary>
@@ -69,7 +61,7 @@ namespace Autorex.Binding {
 				text[endIndex] == ',' || text[endIndex] == '.' || text[endIndex] == ' '); endIndex++)
 				;
 
-			if (!decimal.TryParse(text.Substring(startIndex, endIndex - 1), out result))
+			if (!decimal.TryParse(text.Substring(startIndex, endIndex - startIndex), out result))
 				return;
 
 			try {

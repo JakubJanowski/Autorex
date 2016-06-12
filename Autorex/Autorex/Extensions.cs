@@ -38,7 +38,7 @@ namespace Autorex {
 				previous = current;
 				if (previous == 0.0m) return 0m;
 				current = (previous + x / previous) / 2m;
-			} while (Math.Abs(previous - current) > epsilon);
+			} while (Math.Abs(previous - current) > epsilon);	// loops 3 times in worst case
 			return current;
 		}
 	}

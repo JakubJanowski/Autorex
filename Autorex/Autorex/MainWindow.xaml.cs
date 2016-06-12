@@ -5,25 +5,25 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Autorex.Binding;
+using System.Diagnostics;
 
 namespace Autorex {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
-        // initially use
-        DrawingTool tool = DrawingTool.Select;
+        DrawingTool tool = DrawingTool.Line;
         bool draw = false;
         Point? prevPoint;
 		UIElement temporaryElement;
 		Shape outline;
 		Shape selectedShape;
 		public PropertyManager PropertyManager { get; set; } = new PropertyManager();
-		public string Test { get; set; } = "xdxd";
 		public MainWindow() {
 			InitializeComponent();
-			PropertyManager.Update(canvas);//
 			propertiesPanel.DataContext = PropertyManager;
+			PropertyManager.Select(canvas);//
+			PropertyManager.Update(canvas);//
 		}
 
 		/////////////////////////
@@ -74,19 +74,22 @@ namespace Autorex {
 			tool = DrawingTool.Select;
 		}
 		#endregion
+
+		#region mouse_events
 		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+			Debug.Write("\ncanvas_MouseLeftButtonDown");
 			if (tool != DrawingTool.Select) {
 				draw = true;
 				prevPoint = e.GetPosition(canvas);
-				// add a dot if no mousemove event happened before mouseup
 				canvas.CaptureMouse();
 			}
-			else
+			else {
+				Debug.Write(" updated property manager");
 				PropertyManager.Update(canvas);
+			}
 		}
 
         private void canvas_MouseMove(object sender, MouseEventArgs e) {
-			//Debug.WriteLine("mouseMove " + e.GetPosition(canvas).ToString());
 			if (!draw)
 				return;
 
@@ -100,6 +103,7 @@ namespace Autorex {
 						temporaryElement.MouseLeave += ShapeMouseLeave;
 						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
 						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+						PropertyManager.Select((Ellipse)temporaryElement);
 					}
 					((Ellipse)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
 					((Ellipse)temporaryElement).Width = Math.Abs(prevPoint.Value.X - mousePosition.X);
@@ -118,6 +122,7 @@ namespace Autorex {
 						temporaryElement.MouseLeave += ShapeMouseLeave;
 						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
 						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+						PropertyManager.Select((Line)temporaryElement);
 					}
 					Line temporaryLine = (Line)temporaryElement;
 					temporaryLine.Stroke = System.Windows.Media.Brushes.Blue;
@@ -145,14 +150,17 @@ namespace Autorex {
         }
 
         private void canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+			Debug.Write("\ncanvas_MouseLeftButtonUp");
 			draw = false;
 			temporaryElement = null;
 			canvas.ReleaseMouseCapture();
         }
 
 		private void ShapeMouseEnter(object sender, RoutedEventArgs e) {
+			Debug.Write("\nShapeMouseEnter");
 			if (selectedShape != null || tool != DrawingTool.Select)
 				return;
+			Debug.Write(" added outline");
 			dynamic dynamicSender = sender;
 			outline = Extensions.Outline(dynamicSender);
 			outline.Stroke = System.Windows.Media.Brushes.White;
@@ -165,15 +173,21 @@ namespace Autorex {
 			canvas.Children.Add(outline);
 			selectedShape = (Shape)sender;
 		}
+
 		private void ShapeMouseLeave(object sender, RoutedEventArgs e) {
+			Debug.Write("\nShapeMouseLeave");
 			if (tool == DrawingTool.Select && !outline.IsMouseOver) {
+				Debug.Write(" removed outline");
 				canvas.Children.Remove(outline);
 				Canvas.SetZIndex(selectedShape, 0);
 				selectedShape = null;
 			}
 		}
+
 		private void OutlineMouseLeave(object sender, RoutedEventArgs e) {
+			Debug.Write("\nOutlineMouseLeave");
 			if (!selectedShape.IsMouseOver) {
+				Debug.Write(" removed outline");
 				canvas.Children.Remove(outline);
 				Canvas.SetZIndex(selectedShape, 0);
 				selectedShape = null;
@@ -181,19 +195,23 @@ namespace Autorex {
 		}
 
 		private void ShapeMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+			Debug.Write("\nShapeMouseLeftButtonDown");
 			dynamic dynamicSender = sender;
 			dynamicSender.CaptureMouse();
+			PropertyManager.Select(dynamicSender);
 			PropertyManager.Update(dynamicSender);
 			e.Handled = true;
 		}
 
 		private void ShapeMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+			Debug.Write("\nShapeMouseLeftButtonUp");
 			((Shape)sender).ReleaseMouseCapture();
 			e.Handled = true;
 		}
 
 		private void TextBox_LostFocus(object sender, RoutedEventArgs e) {
-			// odswiezyc wartosc valueString pola zbindowanego do sendera
+			((sender as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ResolvedSource as ValueProperty).Refresh();
 		}
+		#endregion
 	}
 }

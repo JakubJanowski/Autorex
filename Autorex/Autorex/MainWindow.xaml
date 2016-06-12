@@ -30,31 +30,31 @@
                 <Button x:Name="scaleBtn" Content="Scale"/>
                 <Separator Height="12"/>
                 <Label x:Name="propertiesName" Content="Draft properties"/>
-                <DockPanel Visibility="{Binding Width.Visibility}">
+                <DockPanel Visibility="{Binding Width.Visibility.TextValue}">
                     <Label Content="Width"/>
-                    <TextBox VerticalAlignment="Center" Margin="4 0 0 0" Text="{Binding Width.ValueString}"/>
+                    <TextBox VerticalAlignment="Center" Margin="4 0 0 0" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"/>
                 </DockPanel>
-                <DockPanel Visibility="{Binding Height.Visibility}">
+                <DockPanel Visibility="{Binding Height.Visibility.TextValue}">
                     <Label Content="Height"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Height.ValueString}"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Height.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"/>
                 </DockPanel>
-                <DockPanel Visibility="{Binding Center.Visibility}">
+                <DockPanel Visibility="{Binding Center.Visibility.TextValue}">
                     <Label Content="Center offset"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Center.X.ValueString}" Width="50"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Center.Y.ValueString}" Width="50"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                    <TextBox VerticalAlignment="Center" Text="{Binding Center.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
                 </DockPanel>
-                <StackPanel Visibility="{Binding LineSegment.Visibility}">
-                    <DockPanel Visibility="{Binding LineSegment.StartOffset.Visibility}">
+                <StackPanel Visibility="{Binding LineSegment.Visibility.TextValue}">
+                    <DockPanel Visibility="{Binding LineSegment.StartOffset.Visibility.TextValue}">
                         <Label Content="Start offset"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.X.ValueString}" Width="50"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus"  Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.StartOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
                     </DockPanel>
-                    <DockPanel Visibility="{Binding LineSegment.EndOffset.Visibility}">
+                    <DockPanel Visibility="{Binding LineSegment.EndOffset.Visibility.TextValue}">
                         <Label Content="End offset"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.X.ValueString}" Width="50"/>
-                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.Y.ValueString}" Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.X.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
+                        <TextBox VerticalAlignment="Center" Text="{Binding LineSegment.EndOffset.Y.ValueString, UpdateSourceTrigger=PropertyChanged}" LostFocus="TextBox_LostFocus" Width="50"/>
                     </DockPanel>
-                    <DockPanel Visibility="{Binding LineSegment.Visibility}">
+                    <DockPanel Visibility="{Binding LineSegment.Visibility.TextValue}">
                         <Label Content="Length"/>
                         <TextBox VerticalAlignment="Center" IsReadOnly="True" Text="{Binding LineSegment.LengthString, Mode=OneWay}"/>
                     </DockPanel>
