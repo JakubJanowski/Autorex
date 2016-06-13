@@ -60,7 +60,7 @@ namespace Autorex.Binding {
 			decimal result;
 			int startIndex;
 			int endIndex;
-			for (startIndex = 0; startIndex < text.Length && text[startIndex] > '9' && text[startIndex] < '0'; startIndex++)
+			for (startIndex = 0; startIndex < text.Length && (text[startIndex] > '9' || text[startIndex] < '0'); startIndex++)
 				;
 			for (endIndex = startIndex + 1; endIndex < text.Length && ((text[endIndex] <= '9' && text[endIndex] >= '0') ||
 				text[endIndex] == ',' || text[endIndex] == '.' || text[endIndex] == ' '); endIndex++)

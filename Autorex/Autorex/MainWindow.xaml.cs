@@ -47,6 +47,8 @@ namespace Autorex {
 			}
 			canvas.Children.ClearShapes();
 			draftSaved = true;
+			canvas.Width = 1000;
+			canvas.Height = 1000;
 			canvas.Margin = new Thickness(0, 0, 0, 0);
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
@@ -85,7 +87,9 @@ namespace Autorex {
 
 			canvas.Children.ClearShapes();
 			try {
-				while(!binaryReader.EndOfFile()) {
+				canvas.Width = binaryReader.ReadDouble();
+				canvas.Height = binaryReader.ReadDouble();
+				while (!binaryReader.EndOfFile()) {
 					switch((DrawingTool)binaryReader.ReadByte()) {
 						case DrawingTool.Line:
 							Line line = new Line();
@@ -148,6 +152,8 @@ namespace Autorex {
 			}
 
 			try {
+				binaryWriter.Write(canvas.ActualWidth);
+				binaryWriter.Write(canvas.ActualHeight);
 				foreach (Shape shape in canvas.Children) {
 					if (shape.Tag != null)
 						continue;
@@ -311,14 +317,32 @@ namespace Autorex {
 					break;
 				case DrawingTool.Select:
 					mousePosition = e.GetPosition(canvasContainer);
+					// boundaries
+					if (prevViewMargin.Left + mousePosition.X - prevPoint.Value.X > canvasContainer.ActualWidth / 2) {
+						prevViewMargin.Left = canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X;
+						prevViewMargin.Right = -canvas.ActualWidth + canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X;
+					}
+					else if (prevViewMargin.Right + prevPoint.Value.X - mousePosition.X > canvasContainer.ActualWidth / 2) {
+						prevViewMargin.Left = -canvas.ActualWidth + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X;
+						prevViewMargin.Right = canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X;
+					}
+					if (prevViewMargin.Top + mousePosition.Y - prevPoint.Value.Y > canvasContainer.ActualHeight / 2) {
+						prevViewMargin.Top = canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y;
+						prevViewMargin.Bottom = -canvas.ActualHeight + canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y;
+					}
+					else if (prevViewMargin.Bottom + prevPoint.Value.Y - mousePosition.Y > canvasContainer.ActualHeight / 2) {
+						prevViewMargin.Top = -canvas.ActualHeight + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y;
+						prevViewMargin.Bottom = canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y;
+					}
+
 					canvas.Margin = new Thickness(prevViewMargin.Left + mousePosition.X - prevPoint.Value.X, prevViewMargin.Top + mousePosition.Y - prevPoint.Value.Y,
 						prevViewMargin.Right + prevPoint.Value.X - mousePosition.X, prevViewMargin.Bottom + prevPoint.Value.Y - mousePosition.Y);
+					Debug.Write("\n margin " + canvas.Margin);
 					break;
 			}
         }
 
         private void canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-			Debug.Write("\ncanvas_MouseLeftButtonUp");
 			draw = false;
 			temporaryElement = null;
 			canvas.ReleaseMouseCapture();
