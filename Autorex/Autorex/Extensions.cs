@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -55,6 +56,76 @@ namespace Autorex {
 			for (int index = collection.Count - 1; index >= 0; index--)
 				if ((collection[index] as Shape).Tag as string == "grid")
 					collection.RemoveAt(index);
+		}
+		public static void AddGrid(this Canvas canvas, Size? size = null) {
+			if (size == null)
+				size = new Size(canvas.ActualWidth, canvas.ActualHeight);
+			Line line;
+			for (int x = 50; x < size.Value.Width; x += 100) {
+				line = Extensions.CreateLine(x, 0, x, size.Value.Height, 0.5, "#FF808080");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
+				line.StrokeDashOffset = 5;
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int y = 50; y < size.Value.Height; y += 100) {
+				line = Extensions.CreateLine(0, y, size.Value.Width, y, 0.5, "#FF808080");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
+				line.StrokeDashOffset = 5;
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int x = 100; x < size.Value.Width; x += 100) {
+				line = Extensions.CreateLine(x, 0, x, size.Value.Height, 1, "#FF404040");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
+				line.StrokeDashOffset = 5;
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (int y = 100; y < size.Value.Height; y += 100) {
+				line = Extensions.CreateLine(0, y, size.Value.Width, y, 1, "#FF404040");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
+				line.StrokeDashOffset = 5;
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			// Border
+			line = Extensions.CreateLine(0, 0, size.Value.Width, 0, 2, "#FF000000");
+			line.Tag = "grid";
+			canvas.Children.Add(line);
+			line = Extensions.CreateLine(0, 0, 0, size.Value.Height, 2, "#FF000000");
+			line.Tag = "grid";
+			canvas.Children.Add(line);
+			line = Extensions.CreateLine(0, size.Value.Height, size.Value.Width, size.Value.Height, 2, "#FF000000");
+			line.Tag = "grid";
+			canvas.Children.Add(line);
+			line = Extensions.CreateLine(size.Value.Width, 0, size.Value.Width, size.Value.Height, 2, "#FF000000");
+			line.Tag = "grid";
+			canvas.Children.Add(line);
+		}
+		
+		[Obsolete("please use AddGrid with precedent call to ClearGrid instead.")]
+		public static void UpdateGrid(this Canvas canvas, double startX, double startY) {
+			for (double x = startX - 50 + ((100 - (startX - 50) % 100) % 100); x < canvas.ActualWidth; x += 100) {
+				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 0.5, "#FF808080");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (double y = startY - 50 + ((100 - (startY - 50) % 100) % 100); y < canvas.ActualHeight; y += 100) {
+				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 0.5, "#FF808080");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (double x = startX + ((100 - startX % 100) % 100); x < canvas.ActualWidth; x += 100) {
+				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 1, "#FF404040");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
+			for (double y = startY + ((100 - startY % 100) % 100); y < canvas.ActualHeight; y += 100) {
+				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 1, "#FF404040");
+				line.Tag = "grid";
+				canvas.Children.Add(line);
+			}
 		}
 
 		public static decimal Sqrt(decimal x, decimal epsilon = 0.0m) {

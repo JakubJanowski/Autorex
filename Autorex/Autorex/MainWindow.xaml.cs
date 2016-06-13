@@ -21,36 +21,15 @@ namespace Autorex {
 		UIElement temporaryElement;
 		Shape outline;
 		Shape selectedShape;
+		Size canvasWorkareaSize = new Size(1000, 1000);
+		Thickness prevViewMargin;
 		public PropertyManager PropertyManager { get; set; } = new PropertyManager();
+
 		public MainWindow() {
 			InitializeComponent();
 			propertiesPanel.DataContext = PropertyManager;
-		}
-
-
-		/////////////////////////
-		// Static functions
-		private static void AddGrid(Canvas canvas) {
-			for (int x = 50; x < canvas.ActualWidth; x += 100) {
-				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 0.5, "#FF808080");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
-			}
-			for (int y = 50; y < canvas.ActualHeight; y += 100) {
-				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 0.5, "#FF808080");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
-			}
-			for (int x = 100; x < canvas.ActualWidth; x += 100) {
-				Line line = Extensions.CreateLine(x, 0, x, canvas.ActualHeight, 1, "#FF000000");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
-			}
-			for (int y = 100; y < canvas.ActualHeight; y += 100) {
-				Line line = Extensions.CreateLine(0, y, canvas.ActualWidth, y, 1, "#FF000000");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
-			}
+			canvas.Width = canvasWorkareaSize.Width;
+			canvas.Height = canvasWorkareaSize.Height;
 		}
 
 		/////////////////////////
@@ -68,6 +47,7 @@ namespace Autorex {
 			}
 			canvas.Children.ClearShapes();
 			draftSaved = true;
+			canvas.Margin = new Thickness(0, 0, 0, 0);
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
 		}
@@ -225,10 +205,12 @@ namespace Autorex {
 		#region buttons
 		private void penBtn_Click(object sender, RoutedEventArgs e) {
             tool = DrawingTool.Pen;
-        }
+			canvas.Cursor = Cursors.Pen;
+		}
 		private void lineBtn_Click(object sender, RoutedEventArgs e) {
             tool = DrawingTool.Line;
-        }
+			canvas.Cursor = Cursors.Cross;
+		}
 		private void circleBtn_Click(object sender, RoutedEventArgs e) {
 			tool = DrawingTool.Circle;
 		}
@@ -237,9 +219,11 @@ namespace Autorex {
 		}
 		private void ellipseBtn_Click(object sender, RoutedEventArgs e) {
 			tool = DrawingTool.Ellipse;
+			canvas.Cursor = Cursors.Cross;
 		}
 		private void selectBtn_Click(object sender, RoutedEventArgs e) {
 			tool = DrawingTool.Select;
+			canvas.Cursor = Cursors.SizeAll;
 		}
 		#endregion
 
@@ -247,26 +231,26 @@ namespace Autorex {
 		// Mouse events handling
 		#region mouse_events
 		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-			Debug.Write("\ncanvas_MouseLeftButtonDown");
-			if (tool != DrawingTool.Select) {
-				draw = true;
-				prevPoint = e.GetPosition(canvas);
-				canvas.CaptureMouse();
-			}
-			else {
-				Debug.Write(" updated property manager");
+			draw = true;
+			canvas.CaptureMouse();
+			if (tool == DrawingTool.Select) {
 				PropertyManager.Select(canvas);
 				PropertyManager.Update(canvas);
+				prevPoint = e.GetPosition(canvasContainer);
+				prevViewMargin = canvas.Margin;
 			}
+			else
+				prevPoint = e.GetPosition(canvas);
 		}
 
         private void canvas_MouseMove(object sender, MouseEventArgs e) {
 			if (!draw)
 				return;
 
-			Point mousePosition = e.GetPosition(canvas);
+			Point mousePosition;
 			switch (tool) {
 				case DrawingTool.Ellipse:
+					mousePosition = e.GetPosition(canvas);
 					canvas.Children.Remove(temporaryElement);
 					if (temporaryElement == null) {
 						draftSaved = false;
@@ -275,6 +259,7 @@ namespace Autorex {
 						temporaryElement.MouseLeave += ShapeMouseLeave;
 						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
 						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+						((Ellipse)temporaryElement).StrokeThickness = 2;
 						PropertyManager.Select((Ellipse)temporaryElement);
 					}
 					((Ellipse)temporaryElement).Stroke = System.Windows.Media.Brushes.Blue;
@@ -282,34 +267,38 @@ namespace Autorex {
 					((Ellipse)temporaryElement).Height = Math.Abs(prevPoint.Value.Y - mousePosition.Y);
 					Canvas.SetLeft(temporaryElement, Math.Min(prevPoint.Value.X, mousePosition.X));
 					Canvas.SetTop(temporaryElement, Math.Min(prevPoint.Value.Y, mousePosition.Y));
-					((Ellipse)temporaryElement).StrokeThickness = 2;
 					canvas.Children.Add(temporaryElement);
 					PropertyManager.Update((Ellipse)temporaryElement);
 					break;
 				case DrawingTool.Line:
+					mousePosition = e.GetPosition(canvas);
 					canvas.Children.Remove(temporaryElement);
+					Line temporaryLine;
 					if (temporaryElement == null) {
 						draftSaved = false;
-						temporaryElement = new Line();
-						temporaryElement.MouseEnter += ShapeMouseEnter;
-						temporaryElement.MouseLeave += ShapeMouseLeave;
-						temporaryElement.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
-						temporaryElement.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+						temporaryElement = temporaryLine = new Line();
+						temporaryLine.MouseEnter += ShapeMouseEnter;
+						temporaryLine.MouseLeave += ShapeMouseLeave;
+						temporaryLine.MouseLeftButtonDown += ShapeMouseLeftButtonDown;
+						temporaryLine.MouseLeftButtonUp += ShapeMouseLeftButtonUp;
+						temporaryLine.Stroke = System.Windows.Media.Brushes.Blue;
+						temporaryLine.StrokeThickness = 2;
+						temporaryLine.StrokeStartLineCap = PenLineCap.Round;
+						temporaryLine.StrokeEndLineCap = PenLineCap.Round;
 						PropertyManager.Select((Line)temporaryElement);
 					}
-					Line temporaryLine = (Line)temporaryElement;
-					temporaryLine.Stroke = System.Windows.Media.Brushes.Blue;
+					else
+						temporaryLine = (Line)temporaryElement;
+
 					temporaryLine.X1 = prevPoint.Value.X;
 					temporaryLine.Y1 = prevPoint.Value.Y;
 					temporaryLine.X2 = mousePosition.X;
 					temporaryLine.Y2 = mousePosition.Y;
-					temporaryLine.StrokeThickness = 2;
-					temporaryLine.StrokeStartLineCap = PenLineCap.Round;
-					temporaryLine.StrokeEndLineCap = PenLineCap.Round;
 					canvas.Children.Add(temporaryElement);
 					PropertyManager.Update(temporaryLine);
 					break;
 				case DrawingTool.Pen:
+					mousePosition = e.GetPosition(canvas);
 					draftSaved = false;
 					Line myLine = new Line();
 					myLine.Stroke = System.Windows.Media.Brushes.Blue;
@@ -320,6 +309,11 @@ namespace Autorex {
 					canvas.Children.Add(myLine);
 					prevPoint = mousePosition;
 					break;
+				case DrawingTool.Select:
+					mousePosition = e.GetPosition(canvasContainer);
+					canvas.Margin = new Thickness(prevViewMargin.Left + mousePosition.X - prevPoint.Value.X, prevViewMargin.Top + mousePosition.Y - prevPoint.Value.Y,
+						prevViewMargin.Right + prevPoint.Value.X - mousePosition.X, prevViewMargin.Bottom + prevPoint.Value.Y - mousePosition.Y);
+					break;
 			}
         }
 
@@ -328,7 +322,7 @@ namespace Autorex {
 			draw = false;
 			temporaryElement = null;
 			canvas.ReleaseMouseCapture();
-        }
+		}
 
 		private void ShapeMouseEnter(object sender, RoutedEventArgs e) {
 			Debug.Write("\nShapeMouseEnter");
@@ -346,26 +340,29 @@ namespace Autorex {
 			Canvas.SetZIndex((UIElement)sender, 1);
 			canvas.Children.Add(outline);
 			selectedShape = (Shape)sender;
+			canvas.Cursor = Cursors.Hand;
 		}
 
 		private void ShapeMouseLeave(object sender, RoutedEventArgs e) {
 			Debug.Write("\nShapeMouseLeave");
-			if (tool == DrawingTool.Select && !outline.IsMouseOver) {
-				Debug.Write(" removed outline");
-				canvas.Children.Remove(outline);
-				Canvas.SetZIndex(selectedShape, 0);
-				selectedShape = null;
-			}
+			if (tool != DrawingTool.Select || outline.IsMouseOver)
+				return;
+			Debug.Write(" removed outline");
+			canvas.Children.Remove(outline);
+			Canvas.SetZIndex(selectedShape, 0);
+			selectedShape = null;
+			canvas.Cursor = Cursors.SizeAll;
 		}
 
 		private void OutlineMouseLeave(object sender, RoutedEventArgs e) {
 			Debug.Write("\nOutlineMouseLeave");
-			if (!selectedShape.IsMouseOver) {
-				Debug.Write(" removed outline");
-				canvas.Children.Remove(outline);
-				Canvas.SetZIndex(selectedShape, 0);
-				selectedShape = null;
-			}
+			if (selectedShape.IsMouseOver)
+				return;
+			Debug.Write(" removed outline");
+			canvas.Children.Remove(outline);
+			Canvas.SetZIndex(selectedShape, 0);
+			selectedShape = null;
+			canvas.Cursor = Cursors.SizeAll;
 		}
 
 		private void ShapeMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -390,33 +387,43 @@ namespace Autorex {
 
 		/////////////////////////
 		// Miscellaneous events
+		#region events
 		private void Window_ContentRendered(object sender, EventArgs e) {
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
-			AddGrid(canvas);
+			canvas.AddGrid(canvasWorkareaSize);
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-			if (!draftSaved) {
-				MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
-				if (result == MessageBoxResult.Yes)
-					Save(null, null);
-				if (result != MessageBoxResult.No) {
-					e.Cancel = true;
+			if (draftSaved)
+				return;
+			MessageBoxResult result = MessageBox.Show("Unsaved changes will be lost. Do you want to save this draft?", "Warning", MessageBoxButton.YesNoCancel);
+			if (result == MessageBoxResult.Yes)
+				Save(null, null);
+			if (result != MessageBoxResult.No)
+				e.Cancel = true;
+		}
+		
+		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e) {
+			if (e.NewSize.Width * e.NewSize.Height > 100000000 && (e.NewSize.Width > e.PreviousSize.Width || e.NewSize.Height > e.PreviousSize.Height)) {
+				MessageBoxResult result = MessageBox.Show("Specified size is very large and Autorex might slow down your computer. Do you want to continue?", "Warning", MessageBoxButton.YesNo);
+				if (result == MessageBoxResult.No) {
+					canvas.Width = canvasWorkareaSize.Width;
+					canvas.Height = canvasWorkareaSize.Height;
+					Dispatcher.BeginInvoke(new Action(() =>  PropertyManager.Update(canvas)));	// clear last input - not the best way
+					return;
 				}
 			}
-		}
-
-		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e) {
-			if (e.NewSize.Width - e.PreviousSize.Width > 0 || e.NewSize.Height - e.PreviousSize.Height > 0) {
-				canvas.Children.ClearGrid();
-				AddGrid(canvas);
-			}
+			canvasWorkareaSize = e.NewSize;
+			canvas.Children.ClearGrid();
+			canvas.AddGrid(canvasWorkareaSize);
+			canvas.Margin = new Thickness(0, 0, 0, 0);
 		}
 
 		private void propertiesPanel_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e) {
 			PropertyManager.UserOperation((e.OriginalSource as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ParentBinding.Path.Path);
 			draftSaved = false;
 		}
+		#endregion
 	}
 }

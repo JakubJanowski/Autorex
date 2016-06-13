@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
 namespace Autorex.Binding {
 	// Decimal values are not currently supported
 	public class PropertyManager {
-		private Shape selectedShape;
+		private FrameworkElement selectedShape;
 		public ValueProperty Width { get; } = new ValueProperty();
 		public ValueProperty Height { get; } = new ValueProperty();
 		public Segment LineSegment { get; } = new Segment();
@@ -50,7 +45,7 @@ namespace Autorex.Binding {
 		}
 
 		public void Select(Canvas canvas) {
-			selectedShape = null;
+			selectedShape = canvas;
 			Width.Visibility.TextValue = "Visible";
 			Height.Visibility.TextValue = "Visible";
 			Center.SetVisibility("Collapsed");

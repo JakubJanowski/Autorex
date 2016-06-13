@@ -19,8 +19,8 @@
                 <MenuItem Header="_Exit&#xA;" Height="19" Click="Exit"/>
             </MenuItem>
         </Menu>
-        <Border HorizontalAlignment="Left" Margin="0 21" BorderThickness="0 0 1 0" Width="250" BorderBrush="#FF0F0F0F">
-            <StackPanel x:Name="propertiesPanel" Background="#FFE2E2E2" Binding.SourceUpdated="propertiesPanel_SourceUpdated" Margin="0 5 0 0">
+        <Border HorizontalAlignment="Left" Margin="0 26 0 21" BorderThickness="0 1 1 0" Width="250" BorderBrush="#FF0F0F0F">
+            <StackPanel x:Name="propertiesPanel" Background="#FFE2E2E2" Binding.SourceUpdated="propertiesPanel_SourceUpdated">
                 <Button x:Name="circleBtn" Content="Circle" Click="circleBtn_Click" IsEnabled="False"/>
                 <Button x:Name="curveBtn" Content="Curve" Click="curveBtn_Click" IsEnabled="False"/>
                 <Button x:Name="ellipseBtn" Content="Ellipse" Click="ellipseBtn_Click"/>
@@ -35,7 +35,7 @@
                 <Label x:Name="propertiesName" Content="{Binding ShapeName.Text, Mode=OneWay}" ContentStringFormat="{}{0} properties"/>
                 <DockPanel Visibility="{Binding Width.Visibility.TextValue}">
                     <Label Content="Width"/>
-                    <TextBox VerticalAlignment="Center" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}" LostFocus="TextBox_LostFocus" Margin="5 0 1 0" />
+                    <TextBox x:Name="tm" VerticalAlignment="Center" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}" LostFocus="TextBox_LostFocus" Margin="5 0 1 0" />
                 </DockPanel>
                 <DockPanel Visibility="{Binding Height.Visibility.TextValue}">
                     <Label Content="Height"/>
@@ -73,8 +73,8 @@
         <StatusBar Height="21" VerticalAlignment="Bottom">
             <StatusBarItem x:Name="statusBarLabel" Content="" Height="21" VerticalAlignment="Top"/>
         </StatusBar>
-        <Border Margin="255,26,10,26" BorderThickness="1" BorderBrush="#FF0F0F0F">
-            <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" ClipToBounds="True" SizeChanged="canvas_SizeChanged">
+        <Border x:Name="canvasContainer" Margin="255,26,10,26" BorderThickness="1" ClipToBounds="True" BorderBrush="#FF0F0F0F">
+            <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" SizeChanged="canvas_SizeChanged" ClipToBounds="True">
                 <Canvas.Background>
                     <SolidColorBrush Color="White" Opacity="0"/>
                 </Canvas.Background>
