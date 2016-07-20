@@ -57,9 +57,8 @@ namespace Autorex.Binding {
 		/// <param name="text">string to parse</param>
 		/// <param name="value">value in milimeters as reference</param>
 		protected static void ParseValue(string text, ref decimal value) {
-			decimal result;
-			int startIndex;
-			int endIndex;
+			decimal result, ratio;
+			int startIndex, endIndex;
 			for (startIndex = 0; startIndex < text.Length && (text[startIndex] > '9' || text[startIndex] < '0'); startIndex++)
 				;
 			for (endIndex = startIndex + 1; endIndex < text.Length && ((text[endIndex] <= '9' && text[endIndex] >= '0') ||
@@ -69,9 +68,8 @@ namespace Autorex.Binding {
 			if (!decimal.TryParse(text.Substring(startIndex, endIndex - startIndex), out result))
 				return;
 
-			try {
-				value = result * ratios[new Regex("[^a-z]").Replace(text.Substring(endIndex).ToLower(), "")];
-			} catch { }
+			if (ratios.TryGetValue(new Regex("[^a-z]").Replace(text.Substring(endIndex).ToLower(), ""), out ratio))
+				value = result * ratio;
 		}
 	}
 }

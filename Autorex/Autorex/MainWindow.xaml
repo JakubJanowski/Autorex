@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Autorex"
         mc:Ignorable="d"
         ContentRendered="Window_ContentRendered"
+        SizeChanged="Window_SizeChanged"
         Closing="Window_Closing"
         Title="Autorex" Height="720" Width="1280">
     <Grid Background="#FFC9C9C9">
@@ -35,7 +36,7 @@
                 <Label x:Name="propertiesName" Content="{Binding ShapeName.Text, Mode=OneWay}" ContentStringFormat="{}{0} properties"/>
                 <DockPanel Visibility="{Binding Width.Visibility.TextValue}">
                     <Label Content="Width"/>
-                    <TextBox x:Name="tm" VerticalAlignment="Center" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}" LostFocus="TextBox_LostFocus" Margin="5 0 1 0" />
+                    <TextBox VerticalAlignment="Center" Text="{Binding Width.ValueString, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}" LostFocus="TextBox_LostFocus" Margin="5 0 1 0" />
                 </DockPanel>
                 <DockPanel Visibility="{Binding Height.Visibility.TextValue}">
                     <Label Content="Height"/>
