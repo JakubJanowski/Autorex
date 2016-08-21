@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Known bugs</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            font-family: 'Consolas';
+            font-size: 10pt;
+		}
+
+        table {
+            border-color: #1e1e1e;
+            border-collapse: collapse;
+        }
+        td {
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>1.</td>
+			<td style="padding-left: 20px"">&nbsp;</td></tr>
+        <tr>
+            <td>Description:</td>
+            <td style="padding-left: 20px"">Clicking lmb on canvas in different coordinates one time after another sometimes moves the canvas as if the canvas was dragged from previous click coordinate to following click location.</td>
+        </tr>
+        <tr>
+            <td>Note:</td>
+            <td style="padding-left: 20px"">Not confirmed to be actually dependend on the code. Might just be a problem with the mouse or its interrupt management in system as similiar events sometimes happen even outside of the application.</td>
+        </tr>
+        <tr>
+            <td>Priority:</td>
+            <td style="padding-left: 20px"">Medium</td>
+        </tr>
+        <tr>
+            <td>Replication:</td>
+            <td style="padding-left: 20px"">Click at random places in canvas with Select tool selected.</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>2.&nbsp;</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Description:</td>
+            <td style="padding-left: 20px"">When draft gets too large in terms of metric size, parts of the grid start going missing.</td>
+        </tr>
+        <tr>
+            <td>Priority:</td>
+            <td style="padding-left: 20px"">Low</td>
+        </tr>
+        <tr>
+            <td>Replication:</td>
+            <td style="padding-left: 20px"">Run Autorex -&gt; enter bigger values in Width or Height properties fo draft until grid parts will start disappearing.</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Description:</td>
+            <td style="padding-left: 20px"">In Canvas_sizeChanged the check if the window has been initialised might be unnecessary if code was restructured.</td>
+        </tr>
+        <tr>
+            <td>Note:</td>
+            <td style="padding-left: 20px"">Using an if block in Canvas_sizeChanged method would actually slow down (not even lightly but still) program after initialisation so it is better to have longer initialisation for more smooth operations during Autorex run.</td>
+        </tr>
+        <tr>
+            <td>Priority:</td>
+            <td style="padding-left: 20px"">Very Low</td>
+        </tr>
+    </table>
+</body>
+</html>

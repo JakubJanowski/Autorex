@@ -71,7 +71,7 @@
     </Compile>
     <Compile Include="Binding\VisibleProperty.cs" />
     <Compile Include="DrawingTool.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="Utilities.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -103,6 +103,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="to do\not tested.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="to do\known bugs.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

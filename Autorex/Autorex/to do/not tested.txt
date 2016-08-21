@@ -1,0 +1,5 @@
+﻿1. Memory management
+Description:	try-catch block with message displaying error not confirmed to work properly
+File:			MainWindow.xaml.cs
+Function:		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e)
+Note:			last time tested the program looked like falling into infinite loop (two out of three times) when creating draft with big enough size

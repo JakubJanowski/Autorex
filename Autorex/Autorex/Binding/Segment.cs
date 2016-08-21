@@ -12,7 +12,7 @@ namespace Autorex.Binding {
 		public string LengthString {
 			get {
 				try {
-					return Extensions.Sqrt((StartOffset.X.Value - EndOffset.X.Value) * (StartOffset.X.Value - EndOffset.X.Value) +
+					return Utilities.Sqrt((StartOffset.X.Value - EndOffset.X.Value) * (StartOffset.X.Value - EndOffset.X.Value) +
 						(StartOffset.Y.Value - EndOffset.Y.Value) * (StartOffset.Y.Value - EndOffset.Y.Value)).ToString("#.###") + " mm";
 				} catch (ArgumentOutOfRangeException) {
 					return "Inf";
