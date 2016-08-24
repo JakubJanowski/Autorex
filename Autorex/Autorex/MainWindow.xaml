@@ -73,6 +73,8 @@
         </Border>
         <StatusBar Height="21" VerticalAlignment="Bottom">
             <StatusBarItem x:Name="statusBarLabel" Content="" Height="21" VerticalAlignment="Top"/>
+            <Image x:Name="image" Width="21" Source="C:\Users\Jakub\Desktop\C++\PG\Akademia C#\Autorex\Autorex\Autorex\Autorex\bin\Debug\PEPBlocks icon1.ico">
+            </Image>
         </StatusBar>
         <Border x:Name="canvasContainer" Margin="255,26,10,26" BorderThickness="1" ClipToBounds="True" BorderBrush="#FF0F0F0F">
             <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" SizeChanged="canvas_SizeChanged" ClipToBounds="True">

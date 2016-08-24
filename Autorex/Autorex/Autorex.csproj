@@ -108,6 +108,7 @@
     <Resource Include="to do\not tested.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="to do\to do.html" />
     <Content Include="to do\known bugs.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

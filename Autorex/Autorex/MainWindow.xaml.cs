@@ -57,7 +57,6 @@ namespace Autorex {
 			draftSaved = true;
 			canvas.Width = 1000;
 			canvas.Height = 1000;
-			// width and height of workspace area textbox should be updated;
 			canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
 			
 			PropertyManager.Select(canvas);
@@ -203,20 +202,21 @@ namespace Autorex {
 		}
 
 		private void canvas_MouseMove(object sender, MouseEventArgs e) {
+			Point mousePositionOnCanvas = e.GetPosition(canvas);
+			statusBarLabel.Content = "Mouse position: " + Math.Floor(mousePositionOnCanvas.X) + ", " + Math.Floor(mousePositionOnCanvas.Y);
+			//Path.GetFullPath("Resources/image.jpg") // zwraca absolutna sciezke
 			if (!draw)
 				return;
-
-			//Point mousePosition;
-
+			
 			switch (tool) {
 				case DrawingTool.Ellipse:
-					DrawEllipse(e.GetPosition(canvas));
+					DrawEllipse(mousePositionOnCanvas);
 					break;
 				case DrawingTool.Line:
-					DrawLine(e.GetPosition(canvas));
+					DrawLine(mousePositionOnCanvas);
 					break;
 				case DrawingTool.Pen:
-					DrawPen(e.GetPosition(canvas));
+					DrawPen(mousePositionOnCanvas);
 					break;
 				case DrawingTool.Select:
 					Select(e.GetPosition(canvasContainer));
