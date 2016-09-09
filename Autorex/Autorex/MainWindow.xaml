@@ -71,11 +71,6 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <StatusBar Height="21" VerticalAlignment="Bottom">
-            <StatusBarItem x:Name="statusBarLabel" Content="" Height="21" VerticalAlignment="Top"/>
-            <Image x:Name="image" Width="21" Source="C:\Users\Jakub\Desktop\C++\PG\Akademia C#\Autorex\Autorex\Autorex\Autorex\bin\Debug\PEPBlocks icon1.ico">
-            </Image>
-        </StatusBar>
         <Border x:Name="canvasContainer" Margin="255,26,10,26" BorderThickness="1" ClipToBounds="True" BorderBrush="#FF0F0F0F">
             <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" SizeChanged="canvas_SizeChanged" ClipToBounds="True">
                 <Canvas.Background>
@@ -83,5 +78,30 @@
                 </Canvas.Background>
             </Canvas>
         </Border>
+        <StatusBar Height="21" VerticalAlignment="Bottom">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0" x:Name="statusBarCol1" Height="21" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal">
+                    <Image x:Name="col1Image" Width="21" Source="C:\Users\Jakub\Desktop\C++\PG\Akademia C#\Autorex\Autorex\Autorex\Autorex\bin\Debug\PEPBlocks icon1.ico"/>
+                    <Label x:Name="col1Label" Padding="0"/>
+                </StackPanel>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock>2nd column</TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2">
+                <TextBlock>3rd column</TextBlock>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

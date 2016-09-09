@@ -108,6 +108,7 @@
     <Resource Include="to do\not tested.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\CursorPosition.gif" />
     <Content Include="to do\to do.html" />
     <Content Include="to do\known bugs.html" />
   </ItemGroup>

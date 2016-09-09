@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using Autorex.Binding;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Media.Imaging;
 
 namespace Autorex {
 	/// <summary>
@@ -30,6 +31,7 @@ namespace Autorex {
 		public MainWindow() {
 			InitializeComponent();
 			propertiesPanel.DataContext = PropertyManager;
+			col1Image.Source = new BitmapImage(new Uri("Resources/CursorPosition.gif", UriKind.Relative));
 			if (Environment.GetCommandLineArgs().Length == 2) {
 				filename = Environment.GetCommandLineArgs()[1];
 				LoadFile();
@@ -203,8 +205,7 @@ namespace Autorex {
 
 		private void canvas_MouseMove(object sender, MouseEventArgs e) {
 			Point mousePositionOnCanvas = e.GetPosition(canvas);
-			statusBarLabel.Content = "Mouse position: " + Math.Floor(mousePositionOnCanvas.X) + ", " + Math.Floor(mousePositionOnCanvas.Y);
-			//Path.GetFullPath("Resources/image.jpg") // zwraca absolutna sciezke
+			col1Label.Content = mousePositionOnCanvas.X + ", " + mousePositionOnCanvas.Y;
 			if (!draw)
 				return;
 			
