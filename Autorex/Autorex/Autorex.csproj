@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\CursorPosition.gif" />
+    <Content Include="to do\history.html" />
     <Content Include="to do\to do.html" />
     <Content Include="to do\known bugs.html" />
   </ItemGroup>

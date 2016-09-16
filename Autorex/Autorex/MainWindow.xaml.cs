@@ -23,7 +23,6 @@ namespace Autorex {
 		Shape outline;
 		Shape selectedShape;
 		Size canvasWorkareaSize = new Size(1000, 1000);
-		Thickness prevViewMargin;
 		UIElement temporaryElement;
 		public PropertyManager PropertyManager { get; set; } = new PropertyManager();
 
@@ -197,7 +196,7 @@ namespace Autorex {
 				PropertyManager.Select(canvas);
 				PropertyManager.Update(canvas);
 				prevPoint = e.GetPosition(canvasContainer);
-				prevViewMargin = canvas.Margin;
+				Debug.WriteLine("canvas_MouseLeftButtonDown " + canvas.Margin.Top + " " + canvas.Margin.Right + " " + canvas.Margin.Bottom + " " + canvas.Margin.Left);
 			}
 			else
 				prevPoint = e.GetPosition(canvas);
@@ -302,6 +301,7 @@ namespace Autorex {
 		#region events
 		private void Window_ContentRendered(object sender, EventArgs e) {
 			canvas.AddGrid(canvasWorkareaSize);
+			Utilities.RenderGraduationScale(sideScale, bottomScale);
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
 			windowInitialised = true;
@@ -322,9 +322,9 @@ namespace Autorex {
 				canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
 				return;
 			}
-
-			// boundaries
-			canvas.Margin = Utilities.CalculateMargin(prevViewMargin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+			
+			//// boundaries
+			canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
 		}
 
 		// method variables
@@ -355,7 +355,7 @@ namespace Autorex {
 					try {
 						canvas.AddGrid(e.NewSize);
 						canvasWorkareaSize = e.NewSize;
-						canvas.Margin = Utilities.CalculateMargin(prevViewMargin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+						canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
 					} catch (OutOfMemoryException) {
 						canvas.Children.ClearGrid();
 						canvas.Width = canvasWorkareaSize.Width;
@@ -509,26 +509,27 @@ namespace Autorex {
 
 		private void Select(Point mousePosition) {
 			// boundaries
-			if (prevViewMargin.Left + mousePosition.X - prevPoint.Value.X > canvasContainer.ActualWidth / 2) {
-				prevViewMargin.Left = canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X;
-				prevViewMargin.Right = -canvas.ActualWidth + canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X;
+			Thickness margin = canvas.Margin;
+			if (margin.Left + mousePosition.X - prevPoint.Value.X > canvasContainer.ActualWidth / 2) {
+				margin.Left = Math.Floor(canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
+				margin.Right = Math.Floor(-canvas.ActualWidth + canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X);
 			}
-			else if (prevViewMargin.Right + prevPoint.Value.X - mousePosition.X > canvasContainer.ActualWidth / 2) {
-				prevViewMargin.Left = -canvas.ActualWidth + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X;
-				prevViewMargin.Right = canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X;
+			else if (margin.Right + prevPoint.Value.X - mousePosition.X > canvasContainer.ActualWidth / 2) {
+				margin.Left = Math.Floor(-canvas.ActualWidth + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
+				margin.Right = Math.Floor(canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X);
 			}
-			if (prevViewMargin.Top + mousePosition.Y - prevPoint.Value.Y > canvasContainer.ActualHeight / 2) {
-				prevViewMargin.Top = canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y;
-				prevViewMargin.Bottom = -canvas.ActualHeight + canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y;
+			if (margin.Top + mousePosition.Y - prevPoint.Value.Y > canvasContainer.ActualHeight / 2) {
+				margin.Top = Math.Floor(canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
+				margin.Bottom = Math.Floor(-canvas.ActualHeight + canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y);
 			}
-			else if (prevViewMargin.Bottom + prevPoint.Value.Y - mousePosition.Y > canvasContainer.ActualHeight / 2) {
-				prevViewMargin.Top = -canvas.ActualHeight + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y;
-				prevViewMargin.Bottom = canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y;
+			else if (margin.Bottom + prevPoint.Value.Y - mousePosition.Y > canvasContainer.ActualHeight / 2) {
+				margin.Top = Math.Floor(-canvas.ActualHeight + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
+				margin.Bottom = Math.Floor(canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y);
 			}
 
-			canvas.Margin = new Thickness(prevViewMargin.Left + mousePosition.X - prevPoint.Value.X, prevViewMargin.Top + mousePosition.Y - prevPoint.Value.Y,
-				prevViewMargin.Right + prevPoint.Value.X - mousePosition.X, prevViewMargin.Bottom + prevPoint.Value.Y - mousePosition.Y);
-			prevViewMargin = canvas.Margin;
+			canvas.Margin = new Thickness(margin.Left + mousePosition.X - prevPoint.Value.X, margin.Top + mousePosition.Y - prevPoint.Value.Y,
+				margin.Right + prevPoint.Value.X - mousePosition.X, margin.Bottom + prevPoint.Value.Y - mousePosition.Y);
+			Debug.WriteLine("select " + margin.Top + " " + margin.Right + " " + margin.Bottom + " " + margin.Left);
 			prevPoint = mousePosition;
 		}
 		#endregion

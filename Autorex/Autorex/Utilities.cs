@@ -41,7 +41,7 @@ namespace Autorex {
 			copy.StrokeThickness = ellipse.StrokeThickness + 4;
 			return copy;
 		}
-		
+
 		public static bool EndOfFile(this BinaryReader binaryReader) {
 			return binaryReader.BaseStream.Position == binaryReader.BaseStream.Length;
 		}
@@ -49,6 +49,7 @@ namespace Autorex {
 		public static void AddGrid(this Canvas canvas, Size? size = null) {
 			if (size == null)
 				size = new Size(canvas.ActualWidth, canvas.ActualHeight);
+
 			Line line;
 			for (int x = 50; x < size.Value.Width; x += 100) {
 				line = Utilities.CreateLine(x, 0, x, size.Value.Height, 0.5, "#FF808080");
@@ -104,7 +105,7 @@ namespace Autorex {
 				if ((collection[index] as Shape).Tag == null)
 					collection.RemoveAt(index);
 		}
-		
+
 		[Obsolete("please use AddGrid with precedent call to ClearGrid instead.")]
 		public static void UpdateGrid(this Canvas canvas, double startX, double startY) {
 			for (double x = startX - 50 + ((100 - (startX - 50) % 100) % 100); x < canvas.ActualWidth; x += 100) {
@@ -128,6 +129,28 @@ namespace Autorex {
 				canvas.Children.Add(line);
 			}
 		}
+
+		public static void RenderGraduationScale(Canvas sideCanvas, Canvas bottomCanvas) {
+			for (double x = 0; x < bottomCanvas.ActualWidth; x += 10) {
+				double LineHeight = (1 + Convert.ToInt32(x % 100 == 0) * 2 + Convert.ToInt32(x % 50 == 0)) * 3;
+				Line line = Utilities.CreateLine(x, 0, x, LineHeight, 1, "#FF000000");
+				bottomCanvas.Children.Add(line);
+			}
+			for (double x = 0; x < bottomCanvas.ActualWidth; x += 100) {
+				bottomCanvas.Write(x, 0, x.ToString());
+			}
+
+		}
+
+		private static void Write(this Canvas canvas, double x, double y, string text) {
+			TextBlock textBlock = new TextBlock();
+			textBlock.Text = text;
+			//textBlock.Foreground = new SolidColorBrush("#FF000000");
+			Canvas.SetLeft(textBlock, x);
+			Canvas.SetTop(textBlock, y);
+			canvas.Children.Add(textBlock);
+		}
+
 
 		/// <summary>
 		/// Get margins that a new draft with given sizes should have 
@@ -159,33 +182,22 @@ namespace Autorex {
 			return new Thickness(leftMargin, topMargin, rightMargin, bottomMargin);
 		}
 
-		public static Thickness CalculateMargin(Thickness prevViewMargin, Size NewSize, Size PreviousSize, Border canvasContainer, Canvas canvas) {
+		public static Thickness CalculateMargin(Thickness prevViewMargin, Size NewSize, Size PreviousSize, Grid canvasContainer, Canvas canvas) {
+			// have canvasContainer.ActualWidth - canvas.ActualWidth as tmp value
 			if (prevViewMargin.Left < 5) {
-				if (prevViewMargin.Right >= 5) {
-					if (NewSize.Width < PreviousSize.Width)
-						prevViewMargin.Left = prevViewMargin.Left;
-					else
-						prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Right - canvas.ActualWidth);
-				}
-				else
+				if (prevViewMargin.Right < 5)
 					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Left - canvas.ActualWidth) - canvas.ActualWidth);
+				else if (NewSize.Width > PreviousSize.Width)
+					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Right - canvas.ActualWidth);
 			}
-			else
-				prevViewMargin.Left = prevViewMargin.Left;
 			prevViewMargin.Right = canvasContainer.ActualWidth - prevViewMargin.Left - canvas.ActualWidth;
 
 			if (prevViewMargin.Top < 5) {
-				if (prevViewMargin.Bottom >= 5) {
-					if (NewSize.Height < PreviousSize.Height)
-						prevViewMargin.Top = prevViewMargin.Top;
-					else
-						prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Bottom - canvas.ActualHeight);
-				}
-				else
+				if (prevViewMargin.Bottom < 5)
 					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Top - canvas.ActualHeight) - canvas.ActualHeight);
+				else if (NewSize.Height > PreviousSize.Height)
+					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Bottom - canvas.ActualHeight);
 			}
-			else
-				prevViewMargin.Top = prevViewMargin.Top;
 			prevViewMargin.Bottom = canvasContainer.ActualHeight - prevViewMargin.Top - canvas.ActualHeight;
 
 			if (prevViewMargin.Left > canvasContainer.ActualWidth / 2) {
@@ -218,7 +230,7 @@ namespace Autorex {
 				previous = current;
 				if (previous == 0.0m) return 0m;
 				current = (previous + x / previous) / 2m;
-			} while (Math.Abs(previous - current) > epsilon);	// loops 3 times in worst case
+			} while (Math.Abs(previous - current) > epsilon);   // loops 3 times in worst case
 			return current;
 		}
 	}
