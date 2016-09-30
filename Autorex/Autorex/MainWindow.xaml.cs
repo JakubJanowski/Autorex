@@ -187,7 +187,6 @@ namespace Autorex {
 		#region mouse_events
 		private void canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
 			draw = true;
-			canvas.CaptureMouse();
 			if (tool == DrawingTool.Select) {
 				PropertyManager.Select(canvas);
 				PropertyManager.Update(canvas);
@@ -196,6 +195,7 @@ namespace Autorex {
 			}
 			else
 				prevPoint = e.GetPosition(canvas);
+			canvas.CaptureMouse();
 		}
 
 		private void canvas_MouseMove(object sender, MouseEventArgs e) {
@@ -269,6 +269,8 @@ namespace Autorex {
 
 		private void ShapeMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
 			Debug.Write("\nShapeMouseLeftButtonDown");
+			if (selectedShape == null)
+				return;
 			/*dynamic dynamicSender = sender;
 			dynamicSender.CaptureMouse();
 			PropertyManager.Select(dynamicSender);
@@ -282,6 +284,8 @@ namespace Autorex {
 
 		private void ShapeMouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
 			Debug.Write("\nShapeMouseLeftButtonUp");
+			if (selectedShape == null)
+				return;
 			//((Shape)sender).ReleaseMouseCapture();
 			selectedShape.ReleaseMouseCapture();
 			e.Handled = true;
