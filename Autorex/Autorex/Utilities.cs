@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -42,56 +44,46 @@ namespace Autorex {
 			return copy;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool EndOfFile(this BinaryReader binaryReader) {
 			return binaryReader.BaseStream.Position == binaryReader.BaseStream.Length;
 		}
 
-		public static void AddGrid(this Canvas canvas, Size? size = null) {
-			if (size == null)
-				size = new Size(canvas.ActualWidth, canvas.ActualHeight);
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddGrid(this Canvas canvas) {
+			canvas.AddGrid(SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
+		}
 
+		public static void AddGrid(this Canvas canvas, double virtualHeight, double virtualWidth) {
 			Line line;
-			for (int x = 50; x < size.Value.Width; x += 100) {
-				line = Utilities.CreateLine(x, 0, x, size.Value.Height, 0.5, "#FF808080");
-				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
-				line.StrokeDashOffset = 5;
+			for (int x = 50; x < virtualWidth; x += 100) {
+				line = Utilities.CreateLine(x, 0, x, virtualHeight, 1, "#FFA0A0A0");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 7, 3 });
+				line.StrokeDashOffset = 3;
 				line.Tag = "grid";
 				canvas.Children.Add(line);
 			}
-			for (int y = 50; y < size.Value.Height; y += 100) {
-				line = Utilities.CreateLine(0, y, size.Value.Width, y, 0.5, "#FF808080");
-				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
-				line.StrokeDashOffset = 5;
+			for (int y = 50; y < virtualHeight; y += 100) {
+				line = Utilities.CreateLine(0, y, virtualWidth, y, 1, "#FFA0A0A0");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 7, 3 });
+				line.StrokeDashOffset = 3;
 				line.Tag = "grid";
 				canvas.Children.Add(line);
 			}
-			for (int x = 100; x < size.Value.Width; x += 100) {
-				line = Utilities.CreateLine(x, 0, x, size.Value.Height, 1, "#FF404040");
-				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
-				line.StrokeDashOffset = 5;
+			for (int x = 100; x < virtualWidth; x += 100) {
+				line = Utilities.CreateLine(x, 0, x, virtualHeight, 1, "#FF404040");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 13, 12 });
+				line.StrokeDashOffset = 6;
 				line.Tag = "grid";
 				canvas.Children.Add(line);
 			}
-			for (int y = 100; y < size.Value.Height; y += 100) {
-				line = Utilities.CreateLine(0, y, size.Value.Width, y, 1, "#FF404040");
-				line.StrokeDashArray = new DoubleCollection(new double[] { 10 });
-				line.StrokeDashOffset = 5;
+			for (int y = 100; y < virtualHeight; y += 100) {
+				line = Utilities.CreateLine(0, y, virtualWidth, y, 1, "#FF404040");
+				line.StrokeDashArray = new DoubleCollection(new double[] { 13, 12 });
+				line.StrokeDashOffset = 6;
 				line.Tag = "grid";
 				canvas.Children.Add(line);
 			}
-			// Border
-			line = Utilities.CreateLine(0, 0, size.Value.Width, 0, 2, "#FF000000");
-			line.Tag = "grid";
-			canvas.Children.Add(line);
-			line = Utilities.CreateLine(0, 0, 0, size.Value.Height, 2, "#FF000000");
-			line.Tag = "grid";
-			canvas.Children.Add(line);
-			line = Utilities.CreateLine(0, size.Value.Height, size.Value.Width, size.Value.Height, 2, "#FF000000");
-			line.Tag = "grid";
-			canvas.Children.Add(line);
-			line = Utilities.CreateLine(size.Value.Width, 0, size.Value.Width, size.Value.Height, 2, "#FF000000");
-			line.Tag = "grid";
-			canvas.Children.Add(line);
 		}
 
 		public static void ClearGrid(this UIElementCollection collection) {
@@ -106,51 +98,113 @@ namespace Autorex {
 					collection.RemoveAt(index);
 		}
 
-		[Obsolete("please use AddGrid with precedent call to ClearGrid instead.")]
-		public static void UpdateGrid(this Canvas canvas, double startX, double startY) {
-			for (double x = startX - 50 + ((100 - (startX - 50) % 100) % 100); x < canvas.ActualWidth; x += 100) {
-				Line line = Utilities.CreateLine(x, 0, x, canvas.ActualHeight, 0.5, "#FF808080");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
+		[Obsolete("used when canvasGrid is a sibling xml element of canvas.")]
+		public static void UpdateGrid_obsolete(this Canvas canvasGrid, Canvas canvas, Grid canvasContainer) {
+			double marginLeft;
+			double marginRight;
+			double marginTop;
+			double marginBottom;
+			if (canvas.Margin.Left >= -99) {
+				marginLeft = canvas.Margin.Left;
+				marginRight = canvasContainer.ActualWidth - marginLeft - canvasGrid.ActualWidth;
 			}
-			for (double y = startY - 50 + ((100 - (startY - 50) % 100) % 100); y < canvas.ActualHeight; y += 100) {
-				Line line = Utilities.CreateLine(0, y, canvas.ActualWidth, y, 0.5, "#FF808080");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
+			//else if (canvas.Margin.Right >= -99) {
+			//	//marginLeft = canvasGrid.ActualWidth + canvas.Margin.Left - canvas.ActualWidth;
+			//	marginRight = canvas.Margin.Right;
+			//	marginLeft = canvasContainer.ActualWidth - marginRight - canvasGrid.ActualWidth;
+			//}
+			else {
+				marginLeft = Utilities.Mod(canvas.Margin.Left, 100) - 100;
+				marginRight = canvasContainer.ActualWidth - marginLeft - canvasGrid.ActualWidth;
 			}
-			for (double x = startX + ((100 - startX % 100) % 100); x < canvas.ActualWidth; x += 100) {
-				Line line = Utilities.CreateLine(x, 0, x, canvas.ActualHeight, 1, "#FF404040");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
+
+			if (canvas.Margin.Top >= -99) {
+				marginTop = canvas.Margin.Top;
+				marginBottom = canvasContainer.ActualHeight - marginTop - canvasGrid.ActualHeight;
 			}
-			for (double y = startY + ((100 - startY % 100) % 100); y < canvas.ActualHeight; y += 100) {
-				Line line = Utilities.CreateLine(0, y, canvas.ActualWidth, y, 1, "#FF404040");
-				line.Tag = "grid";
-				canvas.Children.Add(line);
+			//else if (canvas.Margin.Bottom >= -99) {
+			//	marginBottom = canvas.Margin.Bottom;
+			//	marginTop = canvasContainer.ActualHeight - marginBottom - canvasGrid.ActualHeight;
+			//}
+			else {
+				marginTop = Utilities.Mod(canvas.Margin.Top, 100) - 100;
+				marginBottom = canvasContainer.ActualHeight - marginTop - canvasGrid.ActualHeight;
 			}
+			System.Diagnostics.Debug.WriteLine("canv margins: " + canvas.Margin.Left + " " + canvas.Margin.Top + " " + canvas.Margin.Right + " " + canvas.Margin.Bottom);
+			System.Diagnostics.Debug.WriteLine("grid margins: " + marginLeft + " " + marginTop + " " + marginRight + " " + marginBottom);
+
+			canvasGrid.Margin = new Thickness(marginLeft, marginTop, marginRight, marginBottom);
+			//canvasGrid.Margin = new Thickness(marginLeft, marginTop, canvasContainer.ActualWidth - canvasGrid.ActualWidth - marginLeft, canvasContainer.ActualHeight - canvasGrid.ActualHeight - marginTop);
 		}
 
-		public static void RenderGraduationScale(Canvas sideCanvas, Canvas bottomCanvas) {
-			for (double x = 0; x < bottomCanvas.ActualWidth; x += 10) {
+		// canvasGrid is child of canvas
+		public static void UpdateGrid(this Canvas canvasGrid, Canvas canvas) {
+			double marginLeft;
+			double marginTop;
+
+			if (canvas.Margin.Left >= -99)
+				marginLeft = 0;
+			else
+				marginLeft = Math.Ceiling(canvas.Margin.Left / 100) * -100;
+
+			if (canvas.Margin.Top >= -99)
+				marginTop = 0;
+			else
+				marginTop = Math.Ceiling(canvas.Margin.Top / 100) * -100;
+
+			double marginRight = canvas.Width - canvasGrid.Width - marginLeft;
+			double marginBottom = canvas.Height - canvasGrid.Height - marginTop;
+
+			canvasGrid.Margin = new Thickness(marginLeft, marginTop, marginRight, marginBottom);
+		}
+
+		public static void InitialiseGraduationScale(Canvas sideScale, Canvas bottomScale, Thickness draftCanvasMargin) {
+			for (double x = 0; x < bottomScale.ActualWidth + 99; x += 10) {
 				double LineHeight = (1 + Convert.ToInt32(x % 100 == 0) * 2 + Convert.ToInt32(x % 50 == 0)) * 3;
 				Line line = Utilities.CreateLine(x, 0, x, LineHeight, 1, "#FF000000");
-				bottomCanvas.Children.Add(line);
+				bottomScale.Children.Add(line);
 			}
-			for (double x = 0; x < bottomCanvas.ActualWidth; x += 100) {
-				bottomCanvas.Write(x, 0, x.ToString());
+			for (double y = 0; y < sideScale.ActualHeight + 99; y += 10) {
+				double LineWidth = (1 + Convert.ToInt32(y % 100 == 0) * 2 + Convert.ToInt32(y % 50 == 0)) * 3;
+				Line line = Utilities.CreateLine(15 - LineWidth, y, 15, y, 1, "#FF000000");
+				sideScale.Children.Add(line);
 			}
-
+			UpdateGraduationScale(sideScale, bottomScale, draftCanvasMargin);
 		}
 
-		private static void Write(this Canvas canvas, double x, double y, string text) {
+		private static double prevBottomScaleLabelShift = ~0;
+		private static double prevSideScaleLabelShift = ~0;
+		public static void UpdateGraduationScale(Canvas sideScale, Canvas bottomScale, Thickness draftCanvasMargin) {
+			bottomScale.Margin = new Thickness(Utilities.Mod(draftCanvasMargin.Left, 100) - 100, bottomScale.Margin.Top, bottomScale.Margin.Right, bottomScale.Margin.Bottom);
+			sideScale.Margin = new Thickness(sideScale.Margin.Left, Utilities.Mod(draftCanvasMargin.Top, 100) - 100, sideScale.Margin.Right, sideScale.Margin.Bottom);
+			double scaleBottomLabelShift = Math.Floor(draftCanvasMargin.Left / 100);
+			if (scaleBottomLabelShift != prevBottomScaleLabelShift) {
+				bottomScale.Children.OfType<TextBlock>().ToList().ForEach(c => bottomScale.Children.Remove(c));
+				for (double x = 0; x < bottomScale.ActualWidth + 99; x += 100) {
+					TextBlock textBlock = CreateTextBlock(x + 2, 0, (x - (scaleBottomLabelShift + 1) * 100).ToString());
+					bottomScale.Children.Add(textBlock);
+				}
+				prevBottomScaleLabelShift = scaleBottomLabelShift;
+			}
+			double scaleSideLabelShift = Math.Floor(draftCanvasMargin.Top / 100);
+			if (scaleSideLabelShift != prevSideScaleLabelShift) {
+				sideScale.Children.OfType<TextBlock>().ToList().ForEach(c => sideScale.Children.Remove(c));
+				for (double y = 0; y < sideScale.ActualHeight + 99; y += 100) {
+					TextBlock textBlock = CreateTextBlock(-2, y + 2, (y - (scaleSideLabelShift + 1) * 100).ToString());
+					textBlock.LayoutTransform = new RotateTransform(90);
+					sideScale.Children.Add(textBlock);
+				}
+				prevSideScaleLabelShift = scaleSideLabelShift;
+			}
+		}
+
+		private static TextBlock CreateTextBlock(double MarginX, double MarginY, string text) {
 			TextBlock textBlock = new TextBlock();
 			textBlock.Text = text;
-			//textBlock.Foreground = new SolidColorBrush("#FF000000");
-			Canvas.SetLeft(textBlock, x);
-			Canvas.SetTop(textBlock, y);
-			canvas.Children.Add(textBlock);
+			Canvas.SetLeft(textBlock, MarginX);
+			Canvas.SetTop(textBlock, MarginY);
+			return textBlock;
 		}
-
 
 		/// <summary>
 		/// Get margins that a new draft with given sizes should have 
@@ -232,6 +286,10 @@ namespace Autorex {
 				current = (previous + x / previous) / 2m;
 			} while (Math.Abs(previous - current) > epsilon);   // loops 3 times in worst case
 			return current;
+		}
+
+		public static double Mod(double a, double b) {
+			return a - b * Math.Floor(a / b);
 		}
 	}
 }

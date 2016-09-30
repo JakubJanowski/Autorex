@@ -8,6 +8,8 @@ using Autorex.Binding;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using System.ComponentModel;
 
 namespace Autorex {
 	/// <summary>
@@ -22,22 +24,46 @@ namespace Autorex {
 		Point? prevPoint;
 		Shape outline;
 		Shape selectedShape;
-		Size canvasWorkareaSize = new Size(1000, 1000);
+		double initialWorkareaHeight = 1000;
+		double initialWorkareaWidth = 1000;
 		UIElement temporaryElement;
 		public PropertyManager PropertyManager { get; set; } = new PropertyManager();
+
+		double virtualScreenHeight;
+		double virtualScreenWidth;
 
 
 		public MainWindow() {
 			InitializeComponent();
 			propertiesPanel.DataContext = PropertyManager;
 			col1Image.Source = new BitmapImage(new Uri("Resources/CursorPosition.gif", UriKind.Relative));
+			virtualScreenHeight = SystemParameters.VirtualScreenHeight;
+			virtualScreenWidth = SystemParameters.VirtualScreenWidth;
+			SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
 			if (Environment.GetCommandLineArgs().Length == 2) {
 				filename = Environment.GetCommandLineArgs()[1];
 				LoadFile();
 			}
 			else {
-				canvas.Width = canvasWorkareaSize.Width;
-				canvas.Height = canvasWorkareaSize.Height;
+				canvas.Width = initialWorkareaWidth;
+				canvas.Height = initialWorkareaHeight;
+			}
+		}
+
+		private void SystemParameters_StaticPropertyChanged(object sender, PropertyChangedEventArgs e) {
+			Debug.WriteLine("Resolution Changed");
+			// get new rectangle bounding all screens
+			if (SystemParameters.VirtualScreenWidth > virtualScreenWidth) {
+				virtualScreenWidth = SystemParameters.VirtualScreenWidth;
+				if (SystemParameters.VirtualScreenHeight > virtualScreenHeight)
+					virtualScreenHeight = SystemParameters.VirtualScreenHeight;
+				canvasGrid.Children.ClearGrid();
+				canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
+			}
+			else if (SystemParameters.VirtualScreenHeight > virtualScreenHeight) {
+				virtualScreenHeight = SystemParameters.VirtualScreenHeight;
+				canvasGrid.Children.ClearGrid();
+				canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
 			}
 		}
 
@@ -59,7 +85,7 @@ namespace Autorex {
 			canvas.Width = 1000;
 			canvas.Height = 1000;
 			canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
-			
+
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
 		}
@@ -207,7 +233,7 @@ namespace Autorex {
 			col1Label.Content = mousePositionOnCanvas.X + ", " + mousePositionOnCanvas.Y;
 			if (!draw)
 				return;
-			
+
 			switch (tool) {
 				case DrawingTool.Ellipse:
 					DrawEllipse(mousePositionOnCanvas);
@@ -300,8 +326,8 @@ namespace Autorex {
 		// Miscellaneous events
 		#region events
 		private void Window_ContentRendered(object sender, EventArgs e) {
-			canvas.AddGrid(canvasWorkareaSize);
-			Utilities.RenderGraduationScale(sideScale, bottomScale);
+			canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
+			Utilities.InitialiseGraduationScale(sideScale, bottomScale, canvas.Margin);
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
 			windowInitialised = true;
@@ -317,20 +343,34 @@ namespace Autorex {
 				e.Cancel = true;
 		}
 
-		private void Window_SizeChanged(object sender, SizeChangedEventArgs e) {
-			if (!windowInitialised) {
-				canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
+		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e) {
+			if (!windowInitialised)
 				return;
-			}
-			
-			//// boundaries
+
+			canvasGrid.Width = e.NewSize.Width > canvasContainer.ActualWidth + 99 ? canvasContainer.ActualWidth + 99 : e.NewSize.Width;
+			canvasGrid.Height = e.NewSize.Height > canvasContainer.ActualHeight + 99 ? canvasContainer.ActualHeight + 99 : e.NewSize.Height;
 			canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+			canvasGrid.UpdateGrid(canvas);
+			PropertyManager.Update(canvas);
 		}
 
-		// method variables
+		private void canvasContainer_SizeChanged(object sender, SizeChangedEventArgs e) {
+			canvasGrid.Width = canvas.ActualWidth > e.NewSize.Width + 99 ? e.NewSize.Width + 99 : canvas.ActualWidth;
+			canvasGrid.Height = canvas.ActualHeight > e.NewSize.Height + 99 ? e.NewSize.Height + 99 : canvas.ActualHeight;
+
+			//// boundaries
+			if (!windowInitialised)
+				canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
+			else
+				canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+			canvasGrid.UpdateGrid(canvas);
+		}
+
+		/* method variables
 		bool reverted = false;
 		bool warn = true;
-		private void canvas_SizeChanged(object sender, SizeChangedEventArgs e) {
+		[Obsolete("function is obsolete", true)]
+		private void canvas_SizeChanged_obsolete(object sender, SizeChangedEventArgs e) {
 			if (!windowInitialised)
 				return;
 
@@ -360,14 +400,14 @@ namespace Autorex {
 						canvas.Children.ClearGrid();
 						canvas.Width = canvasWorkareaSize.Width;
 						canvas.Height = canvasWorkareaSize.Height;
-						MessageBox.Show("Your computer doesn't have enough memory a draft of this size.", "Error", MessageBoxButton.OK);
+						MessageBox.Show("Your computer doesn't have enough memory for a draft of this size.", "Error", MessageBoxButton.OK);
 						canvas.AddGrid(canvasWorkareaSize);
 					}
 				}
 				reverted = false;
 				PropertyManager.Update(canvas);
 			}));
-		}
+		}*/
 
 		private void propertiesPanel_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e) {
 			PropertyManager.UserOperation((e.OriginalSource as FrameworkElement).GetBindingExpression(TextBox.TextProperty).ParentBinding.Path.Path);
@@ -512,24 +552,26 @@ namespace Autorex {
 			Thickness margin = canvas.Margin;
 			if (margin.Left + mousePosition.X - prevPoint.Value.X > canvasContainer.ActualWidth / 2) {
 				margin.Left = Math.Floor(canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
-				margin.Right = Math.Floor(-canvas.ActualWidth + canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X);
+				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - margin.Left;
 			}
 			else if (margin.Right + prevPoint.Value.X - mousePosition.X > canvasContainer.ActualWidth / 2) {
 				margin.Left = Math.Floor(-canvas.ActualWidth + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
-				margin.Right = Math.Floor(canvasContainer.ActualWidth / 2 - prevPoint.Value.X + mousePosition.X);
+				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - margin.Left;
 			}
 			if (margin.Top + mousePosition.Y - prevPoint.Value.Y > canvasContainer.ActualHeight / 2) {
 				margin.Top = Math.Floor(canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
-				margin.Bottom = Math.Floor(-canvas.ActualHeight + canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y);
+				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - margin.Top;
 			}
 			else if (margin.Bottom + prevPoint.Value.Y - mousePosition.Y > canvasContainer.ActualHeight / 2) {
 				margin.Top = Math.Floor(-canvas.ActualHeight + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
-				margin.Bottom = Math.Floor(canvasContainer.ActualHeight / 2 - prevPoint.Value.Y + mousePosition.Y);
+				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - margin.Top;
 			}
 
 			canvas.Margin = new Thickness(margin.Left + mousePosition.X - prevPoint.Value.X, margin.Top + mousePosition.Y - prevPoint.Value.Y,
 				margin.Right + prevPoint.Value.X - mousePosition.X, margin.Bottom + prevPoint.Value.Y - mousePosition.Y);
-			Debug.WriteLine("select " + margin.Top + " " + margin.Right + " " + margin.Bottom + " " + margin.Left);
+			canvasGrid.UpdateGrid(canvas);
+			//Debug.WriteLine("select " + margin.Top + " " + margin.Right + " " + margin.Bottom + " " + margin.Left);
+			Utilities.UpdateGraduationScale(sideScale, bottomScale, canvas.Margin);
 			prevPoint = mousePosition;
 		}
 		#endregion

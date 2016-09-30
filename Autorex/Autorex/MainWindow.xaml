@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Autorex"
         mc:Ignorable="d"
+        SnapsToDevicePixels="True"
         ContentRendered="Window_ContentRendered"
-        SizeChanged="Window_SizeChanged"
         Closing="Window_Closing"
         Title="Autorex" Height="720" Width="1280">
     <Grid Background="#FFC9C9C9">
@@ -73,18 +73,19 @@
         </Border>
         <Border Margin="255,26,10,26" BorderThickness="1" BorderBrush="#FF0F0F0F">
             <Grid>
-                <Grid x:Name="canvasContainer" Margin="16,0,0,16" ClipToBounds="True">
+                <Grid x:Name="canvasContainer" Margin="16,0,0,16" SizeChanged="canvasContainer_SizeChanged" ClipToBounds="True">
                     <Canvas x:Name="canvas" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" SizeChanged="canvas_SizeChanged" ClipToBounds="True">
                         <Canvas.Background>
-                            <SolidColorBrush Color="#FFE62626" Opacity="0"/>
+                            <SolidColorBrush Color="#330000FF"/>
                         </Canvas.Background>
+                        <Canvas x:Name="canvasGrid" ClipToBounds="True"/>
                     </Canvas>
                 </Grid>
-                <Border BorderThickness="0 0 1 0" BorderBrush="Black" HorizontalAlignment="Left" Width="16" Margin="0,0,0,16">
-                    <Canvas x:Name="sideScale" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" />
+                <Border x:Name="sideScaleContainer" BorderThickness="0 0 1 0" BorderBrush="Black" HorizontalAlignment="Left" Width="16" Margin="0,0,0,16" ClipToBounds="True">
+                    <Canvas x:Name="sideScale" Background="#FFE62626" />
                 </Border>
-                <Border BorderThickness="0 1 0 0" BorderBrush="Black"  VerticalAlignment="Bottom" Height="16" Margin="16,0,0,0">
-                    <Canvas x:Name="bottomScale" Background="{DynamicResource {x:Static SystemColors.MenuHighlightBrushKey}}"/>
+                <Border x:Name="bottomScaleContainer" BorderThickness="0 1 0 0" BorderBrush="Black" VerticalAlignment="Bottom" Height="16" Margin="16,0,0,0" ClipToBounds="True">
+                    <Canvas x:Name="bottomScale" Background="#FFE62626"/>
                 </Border>
             </Grid>
         </Border>

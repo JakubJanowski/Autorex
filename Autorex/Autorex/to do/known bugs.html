@@ -19,6 +19,9 @@
         td {
             vertical-align: top;
         }
+    	.auto-style1 {
+			height: 45px;
+		}
     </style>
 </head>
 <body>
@@ -52,7 +55,7 @@
         </tr>
         <tr>
             <td>Description:</td>
-            <td style="padding-left: 20px"">When draft gets too large in terms of metric size, parts of the grid start going missing.</td>
+            <td style="padding-left: 20px"">When draft gets too large in terms of metric size, canvas starts to break.</td>
         </tr>
         <tr>
             <td>Priority:</td>
@@ -81,6 +84,32 @@
         <tr>
             <td>Priority:</td>
             <td style="padding-left: 20px"">Very Low</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>4.</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="auto-style1">Description:</td>
+            <td style="padding-left: 20px"" class="auto-style1">Sometimes after starting Autorex (in debug mode) and selecting the canvas to move it an error occurs in the line
+				<br />
+				<em>if (margin.Left + mousePosition.X - prevPoint.Value.X &gt; canvasContainer.ActualWidth / 2) { </em>
+				<br />
+				in <em>private void Select(Point mousePosition) </em>function<br />
+				Exception thrown: &#39;System.InvalidOperationException&#39; in mscorlib.dll An unhandled exception of type &#39;System.InvalidOperationException&#39; occurred in mscorlib.dll Additional information: Nullable object must have a value.<br />
+				for prevPoint value.</td>
+        </tr>
+        <tr>
+            <td>Priority:</td>
+            <td style="padding-left: 20px"">High</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="padding-left: 20px"">&nbsp;</td>
         </tr>
     </table>
 </body>
