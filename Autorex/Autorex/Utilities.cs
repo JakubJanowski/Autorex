@@ -138,19 +138,19 @@ namespace Autorex {
 		}
 
 		// canvasGrid is child of canvas
-		public static void UpdateGrid(this Canvas canvasGrid, Canvas canvas) {
+		public static void UpdateGrid(this Canvas canvasGrid, Canvas canvas, Thickness canvasMargin) {
 			double marginLeft;
 			double marginTop;
 
-			if (canvas.Margin.Left >= -99)
+			if (canvasMargin.Left >= -99)
 				marginLeft = 0;
 			else
-				marginLeft = Math.Ceiling(canvas.Margin.Left / 100) * -100;
+				marginLeft = Math.Ceiling(canvasMargin.Left / 100) * -100;
 
-			if (canvas.Margin.Top >= -99)
+			if (canvasMargin.Top >= -99)
 				marginTop = 0;
 			else
-				marginTop = Math.Ceiling(canvas.Margin.Top / 100) * -100;
+				marginTop = Math.Ceiling(canvasMargin.Top / 100) * -100;
 
 			double marginRight = canvas.Width - canvasGrid.Width - marginLeft;
 			double marginBottom = canvas.Height - canvasGrid.Height - marginTop;
@@ -158,13 +158,13 @@ namespace Autorex {
 			canvasGrid.Margin = new Thickness(marginLeft, marginTop, marginRight, marginBottom);
 		}
 
-		public static void InitialiseGraduationScale(Canvas sideScale, Canvas bottomScale, Thickness draftCanvasMargin) {
-			for (double x = 0; x < bottomScale.ActualWidth + 99; x += 10) {
+		public static void InitialiseGraduationScale(Canvas sideScale, Canvas bottomScale, Thickness draftCanvasMargin, double virtualHeight, double virtualWidth) {
+			for (double x = 0; x < virtualWidth + 99; x += 10) {
 				double LineHeight = (1 + Convert.ToInt32(x % 100 == 0) * 2 + Convert.ToInt32(x % 50 == 0)) * 3;
 				Line line = Utilities.CreateLine(x, 0, x, LineHeight, 1, "#FF000000");
 				bottomScale.Children.Add(line);
 			}
-			for (double y = 0; y < sideScale.ActualHeight + 99; y += 10) {
+			for (double y = 0; y < virtualHeight + 99; y += 10) {
 				double LineWidth = (1 + Convert.ToInt32(y % 100 == 0) * 2 + Convert.ToInt32(y % 50 == 0)) * 3;
 				Line line = Utilities.CreateLine(15 - LineWidth, y, 15, y, 1, "#FF000000");
 				sideScale.Children.Add(line);
@@ -173,12 +173,14 @@ namespace Autorex {
 		}
 
 		private static double prevBottomScaleLabelShift = ~0;
+		private static double prevBottomScaleWidth = 0;
 		private static double prevSideScaleLabelShift = ~0;
+		private static double prevSideScaleHeight = 0;
 		public static void UpdateGraduationScale(Canvas sideScale, Canvas bottomScale, Thickness draftCanvasMargin) {
 			bottomScale.Margin = new Thickness(Utilities.Mod(draftCanvasMargin.Left, 100) - 100, bottomScale.Margin.Top, bottomScale.Margin.Right, bottomScale.Margin.Bottom);
 			sideScale.Margin = new Thickness(sideScale.Margin.Left, Utilities.Mod(draftCanvasMargin.Top, 100) - 100, sideScale.Margin.Right, sideScale.Margin.Bottom);
 			double scaleBottomLabelShift = Math.Floor(draftCanvasMargin.Left / 100);
-			if (scaleBottomLabelShift != prevBottomScaleLabelShift) {
+			if (scaleBottomLabelShift != prevBottomScaleLabelShift || prevBottomScaleWidth < bottomScale.ActualWidth) {
 				bottomScale.Children.OfType<TextBlock>().ToList().ForEach(c => bottomScale.Children.Remove(c));
 				for (double x = 0; x < bottomScale.ActualWidth + 99; x += 100) {
 					TextBlock textBlock = CreateTextBlock(x + 2, 0, (x - (scaleBottomLabelShift + 1) * 100).ToString());
@@ -186,8 +188,9 @@ namespace Autorex {
 				}
 				prevBottomScaleLabelShift = scaleBottomLabelShift;
 			}
+			prevBottomScaleWidth = bottomScale.ActualWidth;
 			double scaleSideLabelShift = Math.Floor(draftCanvasMargin.Top / 100);
-			if (scaleSideLabelShift != prevSideScaleLabelShift) {
+			if (scaleSideLabelShift != prevSideScaleLabelShift || prevSideScaleHeight < sideScale.ActualHeight) {
 				sideScale.Children.OfType<TextBlock>().ToList().ForEach(c => sideScale.Children.Remove(c));
 				for (double y = 0; y < sideScale.ActualHeight + 99; y += 100) {
 					TextBlock textBlock = CreateTextBlock(-2, y + 2, (y - (scaleSideLabelShift + 1) * 100).ToString());
@@ -196,7 +199,8 @@ namespace Autorex {
 				}
 				prevSideScaleLabelShift = scaleSideLabelShift;
 			}
-		}
+			prevSideScaleHeight = sideScale.ActualHeight;
+		}		
 
 		private static TextBlock CreateTextBlock(double MarginX, double MarginY, string text) {
 			TextBlock textBlock = new TextBlock();
@@ -214,6 +218,9 @@ namespace Autorex {
 		/// <returns>Margins for new draft</returns>
 		public static Thickness GetInitialMargin(double horizontalDifference, double verticalDifference) {
 			double leftMargin, topMargin, rightMargin, bottomMargin;
+
+			horizontalDifference -= 2;
+			verticalDifference -= 2;
 
 			if (horizontalDifference > 10) {
 				leftMargin = horizontalDifference / 2;
@@ -238,36 +245,38 @@ namespace Autorex {
 
 		public static Thickness CalculateMargin(Thickness prevViewMargin, Size NewSize, Size PreviousSize, Grid canvasContainer, Canvas canvas) {
 			// have canvasContainer.ActualWidth - canvas.ActualWidth as tmp value
+			double borderWidth = canvas.ActualWidth + 2;
+			double borderHeight = canvas.ActualHeight + 2;
 			if (prevViewMargin.Left < 5) {
 				if (prevViewMargin.Right < 5)
-					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Left - canvas.ActualWidth) - canvas.ActualWidth);
+					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Left - borderWidth) - borderWidth);
 				else if (NewSize.Width > PreviousSize.Width)
-					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Right - canvas.ActualWidth);
+					prevViewMargin.Left = Math.Min(5, canvasContainer.ActualWidth - prevViewMargin.Right - borderWidth);
 			}
-			prevViewMargin.Right = canvasContainer.ActualWidth - prevViewMargin.Left - canvas.ActualWidth;
+			prevViewMargin.Right = canvasContainer.ActualWidth - prevViewMargin.Left - borderWidth;
 
 			if (prevViewMargin.Top < 5) {
 				if (prevViewMargin.Bottom < 5)
-					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Top - canvas.ActualHeight) - canvas.ActualHeight);
+					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Top - borderHeight) - borderHeight);
 				else if (NewSize.Height > PreviousSize.Height)
-					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Bottom - canvas.ActualHeight);
+					prevViewMargin.Top = Math.Min(5, canvasContainer.ActualHeight - prevViewMargin.Bottom - borderHeight);
 			}
-			prevViewMargin.Bottom = canvasContainer.ActualHeight - prevViewMargin.Top - canvas.ActualHeight;
+			prevViewMargin.Bottom = canvasContainer.ActualHeight - prevViewMargin.Top - borderHeight;
 
 			if (prevViewMargin.Left > canvasContainer.ActualWidth / 2) {
 				prevViewMargin.Left = canvasContainer.ActualWidth / 2;
-				prevViewMargin.Right = -canvas.ActualWidth + canvasContainer.ActualWidth / 2;
+				prevViewMargin.Right = -borderWidth + canvasContainer.ActualWidth / 2;
 			}
 			else if (prevViewMargin.Right > canvasContainer.ActualWidth / 2) {
-				prevViewMargin.Left = -canvas.ActualWidth + canvasContainer.ActualWidth / 2;
+				prevViewMargin.Left = -borderWidth + canvasContainer.ActualWidth / 2;
 				prevViewMargin.Right = canvasContainer.ActualWidth / 2;
 			}
 			if (prevViewMargin.Top > canvasContainer.ActualHeight / 2) {
 				prevViewMargin.Top = canvasContainer.ActualHeight / 2;
-				prevViewMargin.Bottom = -canvas.ActualHeight + canvasContainer.ActualHeight / 2;
+				prevViewMargin.Bottom = -borderHeight + canvasContainer.ActualHeight / 2;
 			}
 			else if (prevViewMargin.Bottom > canvasContainer.ActualHeight / 2) {
-				prevViewMargin.Top = -canvas.ActualHeight + canvasContainer.ActualHeight / 2;
+				prevViewMargin.Top = -borderHeight + canvasContainer.ActualHeight / 2;
 				prevViewMargin.Bottom = canvasContainer.ActualHeight / 2;
 			}
 

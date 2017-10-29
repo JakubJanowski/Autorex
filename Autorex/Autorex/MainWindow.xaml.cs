@@ -59,11 +59,17 @@ namespace Autorex {
 					virtualScreenHeight = SystemParameters.VirtualScreenHeight;
 				canvasGrid.Children.ClearGrid();
 				canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
+				bottomScale.Children.Clear();
+				sideScale.Children.Clear();
+				Utilities.InitialiseGraduationScale(sideScale, bottomScale, canvasBorder.Margin, virtualScreenHeight, virtualScreenWidth);
 			}
 			else if (SystemParameters.VirtualScreenHeight > virtualScreenHeight) {
 				virtualScreenHeight = SystemParameters.VirtualScreenHeight;
 				canvasGrid.Children.ClearGrid();
 				canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
+				bottomScale.Children.Clear();
+				sideScale.Children.Clear();
+				Utilities.InitialiseGraduationScale(sideScale, bottomScale, canvasBorder.Margin, virtualScreenHeight, virtualScreenWidth);
 			}
 		}
 
@@ -84,7 +90,7 @@ namespace Autorex {
 			draftSaved = true;
 			canvas.Width = 1000;
 			canvas.Height = 1000;
-			canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
+			canvasBorder.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
 
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
@@ -221,7 +227,7 @@ namespace Autorex {
 				PropertyManager.Select(canvas);
 				PropertyManager.Update(canvas);
 				prevPoint = e.GetPosition(canvasContainer);
-				Debug.WriteLine("canvas_MouseLeftButtonDown " + canvas.Margin.Top + " " + canvas.Margin.Right + " " + canvas.Margin.Bottom + " " + canvas.Margin.Left);
+				Debug.WriteLine("canvas_MouseLeftButtonDown " + canvasBorder.Margin.Top + " " + canvasBorder.Margin.Right + " " + canvasBorder.Margin.Bottom + " " + canvasBorder.Margin.Left);
 			}
 			else
 				prevPoint = e.GetPosition(canvas);
@@ -331,7 +337,7 @@ namespace Autorex {
 		#region events
 		private void Window_ContentRendered(object sender, EventArgs e) {
 			canvasGrid.AddGrid(virtualScreenHeight, virtualScreenWidth);
-			Utilities.InitialiseGraduationScale(sideScale, bottomScale, canvas.Margin);
+			Utilities.InitialiseGraduationScale(sideScale, bottomScale, canvasBorder.Margin, virtualScreenHeight, virtualScreenWidth);
 			PropertyManager.Select(canvas);
 			PropertyManager.Update(canvas);
 			windowInitialised = true;
@@ -353,8 +359,9 @@ namespace Autorex {
 
 			canvasGrid.Width = e.NewSize.Width > canvasContainer.ActualWidth + 99 ? canvasContainer.ActualWidth + 99 : e.NewSize.Width;
 			canvasGrid.Height = e.NewSize.Height > canvasContainer.ActualHeight + 99 ? canvasContainer.ActualHeight + 99 : e.NewSize.Height;
-			canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
-			canvasGrid.UpdateGrid(canvas);
+			canvasBorder.Margin = Utilities.CalculateMargin(canvasBorder.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+			canvasGrid.UpdateGrid(canvas, canvasBorder.Margin);
+			Utilities.UpdateGraduationScale(sideScale, bottomScale, canvasBorder.Margin);
 			PropertyManager.Update(canvas);
 		}
 
@@ -364,10 +371,11 @@ namespace Autorex {
 
 			//// boundaries
 			if (!windowInitialised)
-				canvas.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
+				canvasBorder.Margin = Utilities.GetInitialMargin(canvasContainer.ActualWidth - canvas.Width, canvasContainer.ActualHeight - canvas.Height);
 			else
-				canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
-			canvasGrid.UpdateGrid(canvas);
+				canvasBorder.Margin = Utilities.CalculateMargin(canvasBorder.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+			canvasGrid.UpdateGrid(canvas, canvasBorder.Margin);
+			Utilities.UpdateGraduationScale(sideScale, bottomScale, canvasBorder.Margin);
 		}
 
 		/* method variables
@@ -399,7 +407,7 @@ namespace Autorex {
 					try {
 						canvas.AddGrid(e.NewSize);
 						canvasWorkareaSize = e.NewSize;
-						canvas.Margin = Utilities.CalculateMargin(canvas.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
+						canvasBorder.Margin = Utilities.CalculateMargin(canvasBorder.Margin, e.NewSize, e.PreviousSize, canvasContainer, canvas);
 					} catch (OutOfMemoryException) {
 						canvas.Children.ClearGrid();
 						canvas.Width = canvasWorkareaSize.Width;
@@ -553,29 +561,28 @@ namespace Autorex {
 
 		private void Select(Point mousePosition) {
 			// boundaries
-			Thickness margin = canvas.Margin;
+			Thickness margin = canvasBorder.Margin;
 			if (margin.Left + mousePosition.X - prevPoint.Value.X > canvasContainer.ActualWidth / 2) {
 				margin.Left = Math.Floor(canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
-				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - margin.Left;
+				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - 2 - margin.Left;
 			}
 			else if (margin.Right + prevPoint.Value.X - mousePosition.X > canvasContainer.ActualWidth / 2) {
-				margin.Left = Math.Floor(-canvas.ActualWidth + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
-				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - margin.Left;
+				margin.Left = Math.Floor(-canvas.ActualWidth - 2 + canvasContainer.ActualWidth / 2 - mousePosition.X + prevPoint.Value.X);
+				margin.Right = canvasContainer.ActualWidth - canvas.ActualWidth - 2 - margin.Left;
 			}
 			if (margin.Top + mousePosition.Y - prevPoint.Value.Y > canvasContainer.ActualHeight / 2) {
 				margin.Top = Math.Floor(canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
-				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - margin.Top;
+				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - 2 - margin.Top;
 			}
 			else if (margin.Bottom + prevPoint.Value.Y - mousePosition.Y > canvasContainer.ActualHeight / 2) {
-				margin.Top = Math.Floor(-canvas.ActualHeight + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
-				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - margin.Top;
+				margin.Top = Math.Floor(-canvas.ActualHeight - 2 + canvasContainer.ActualHeight / 2 - mousePosition.Y + prevPoint.Value.Y);
+				margin.Bottom = canvasContainer.ActualHeight - canvas.ActualHeight - 2 - margin.Top;
 			}
 
-			canvas.Margin = new Thickness(margin.Left + mousePosition.X - prevPoint.Value.X, margin.Top + mousePosition.Y - prevPoint.Value.Y,
+			canvasBorder.Margin = new Thickness(margin.Left + mousePosition.X - prevPoint.Value.X, margin.Top + mousePosition.Y - prevPoint.Value.Y,
 				margin.Right + prevPoint.Value.X - mousePosition.X, margin.Bottom + prevPoint.Value.Y - mousePosition.Y);
-			canvasGrid.UpdateGrid(canvas);
-			//Debug.WriteLine("select " + margin.Top + " " + margin.Right + " " + margin.Bottom + " " + margin.Left);
-			Utilities.UpdateGraduationScale(sideScale, bottomScale, canvas.Margin);
+			canvasGrid.UpdateGrid(canvas, canvasBorder.Margin);
+			Utilities.UpdateGraduationScale(sideScale, bottomScale, canvasBorder.Margin);
 			prevPoint = mousePosition;
 		}
 		#endregion
